@@ -1,0 +1,1086 @@
+This is libtool.info, produced by makeinfo version 3.12k from
+libtool.texi.
+
+INFO-DIR-SECTION GNU programming tools
+START-INFO-DIR-ENTRY
+* Libtool: (libtool).           Generic shared library support script.
+END-INFO-DIR-ENTRY
+
+INFO-DIR-SECTION Individual utilities
+START-INFO-DIR-ENTRY
+* libtoolize: (libtool)Invoking libtoolize.     Adding libtool support.
+END-INFO-DIR-ENTRY
+
+   This file documents GNU Libtool 1.3.5
+
+   Copyright (C) 1996-1999 Free Software Foundation, Inc.
+
+   Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+   Permission is granted to copy and distribute modified versions of
+this manual under the conditions for verbatim copying, provided that the
+entire resulting derived work is distributed under the terms of a
+permission notice identical to this one.
+
+   Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that this permission notice may be stated in a
+translation approved by the Foundation.
+
+
+File: libtool.info,  Node: Libltdl interface,  Next: Modules for libltdl,  Up: Using libltdl
+
+How to use libltdl in your programs
+===================================
+
+The libltdl API is similar to the dlopen interface of Solaris and Linux,
+which is very simple but powerful.
+
+To use libltdl in your program you have to include the header file
+`ltdl.h':
+
+     #include <ltdl.h>
+
+Note that libltdl is not threadsafe, i.e. a multithreaded application
+has to use a mutex for libltdl.  It was reported that GNU/Linux's glibc
+2.0's `dlopen' with `RTLD_LAZY' (which libltdl uses by default) is not
+thread-safe, but this problem is supposed to be fixed in glibc 2.1.  On
+the other hand, `RTLD_NOW' was reported to introduce problems in
+multi-threaded applications on FreeBSD.  Working around these problems
+is left as an exercise for the reader; contributions are certainly
+welcome.
+
+The following types are defined in `ltdl.h':
+
+ - Type: lt_ptr_t
+     `lt_ptr_t' is a generic pointer.
+
+ - Type: lt_dlhandle
+     `lt_dlhandle' is a module "handle".  Every dlopened module has a
+     handle associated with it.
+
+ - Type: lt_dlsymlist
+     `lt_dlsymlist' is a symbol list for dlpreopened modules.  This
+     structure is described in *note Dlpreopening::.
+
+libltdl provides the following functions:
+
+ - Function: int lt_dlinit (void)
+     Initialize libltdl.  This function must be called before using
+     libltdl and may be called several times.  Return 0 on success,
+     otherwise the number of errors.
+
+ - Function: int lt_dlexit (void)
+     Shut down libltdl and close all modules.  This function will only
+     then shut down libltdl when it was called as many times as
+     `lt_dlinit' has been successfully called.  Return 0 on success,
+     otherwise the number of errors.
+
+ - Function: lt_dlhandle lt_dlopen (const char *FILENAME)
+     Open the module with the file name FILENAME and return a handle
+     for it.  `lt_dlopen' is able to open libtool dynamic modules,
+     preloaded static modules, the program itself and native dynamic
+     libraries.
+
+     Unresolved symbols in the module are resolved using its dependency
+     libraries (not implemented yet) and previously dlopened modules.
+     If the executable using this module was linked with the
+     `-export-dynamic' flag, then the global symbols in the executable
+     will also be used to resolve references in the module.
+
+     If FILENAME is NULL and the program was linked with
+     `-export-dynamic' or `-dlopen self', `lt_dlopen' will return a
+     handle for the program itself, which can be used to access its
+     symbols.
+
+     If libltdl cannot find the library and the file name FILENAME does
+     not have a directory component it will additionally search in the
+     following search paths for the module (in the order as follows):
+
+       1. user-defined search path: This search path can be set by the
+          program using the functions `lt_dlsetsearchpath' and
+          `lt_dladdsearchdir'.
+
+       2. libltdl's search path: This search path is the value of the
+          environment variable LTDL_LIBRARY_PATH.
+
+       3. system library search path: The system dependent library
+          search path (e.g. on Linux it is LD_LIBRARY_PATH).
+
+     Each search path must be a colon-separated list of absolute
+     directories, for example, `"/usr/lib/mypkg:/lib/foo"'.
+
+     If the same module is loaded several times, the same handle is
+     returned.  If `lt_dlopen' fails for any reason, it returns NULL.
+
+ - Function: lt_dlhandle lt_dlopenext (const char *FILENAME)
+     The same as `lt_dlopen', except that it tries to append different
+     file name extensions to the file name.  If the file with the file
+     name FILENAME cannot be found libltdl tries to append the
+     following extensions:
+
+       1. the libtool archive extension `.la'
+
+       2. the extension used for native dynamic libraries on the host
+          platform, e.g., `.so', `.sl', etc.
+
+     This lookup strategy was designed to allow programs that don't
+     have knowledge about native dynamic libraries naming conventions
+     to be able to `dlopen' such libraries as well as libtool modules
+     transparently.
+
+ - Function: int lt_dlclose (lt_dlhandle HANDLE)
+     Decrement the reference count on the module HANDLE.  If it drops
+     to zero and no other module depends on this module, then the
+     module is unloaded.  Return 0 on success.
+
+ - Function: lt_ptr_t lt_dlsym (lt_dlhandle HANDLE, const char *NAME)
+     Return the address in the module HANDLE, where the symbol given by
+     the null terminated string NAME is loaded.  If the symbol cannot
+     be found, NULL is returned.
+
+ - Function: const char * lt_dlerror (void)
+     Return a human readable string describing the most recent error
+     that occurred from any of libltdl's functions.  Return NULL if no
+     errors have occurred since initialization or since it was last
+     called.
+
+ - Function: int lt_dlpreload (const lt_dlsymlist *PRELOADED)
+     Register the list of preloaded modules PRELOADED.  If PRELOADED is
+     NULL, then all previously registered symbol lists, except the list
+     set by `lt_dlpreload_default', are deleted. Return 0 on success.
+
+ - Function: int lt_dlpreload_default (const lt_dlsymlist *PRELOADED)
+     Set the default list of preloaded modules to PRELOADED, which
+     won't be deleted by `lt_dlpreload'.  Note that this function does
+     _not_ require libltdl to be initialized using `lt_dlinit' and can
+     be used in the program to register the default preloaded modules.
+     Instead of calling this function directly, most programs will use
+     the macro `LTDL_SET_PRELOADED_SYMBOLS'.
+
+     Return 0 on success.
+
+ - Macro: LTDL_SET_PRELOADED_SYMBOLS()
+     Set the default list of preloaded symbols.  Should be used in your
+     program to initialize libltdl's list of preloaded modules.
+
+          #include <ltdl.h>
+          
+          int main() {
+            /* ... */
+            LTDL_SET_PRELOADED_SYMBOLS();
+            /* ... */
+          }
+
+ - Function: int lt_dladdsearchdir (const char *SEARCH_DIR)
+     Add the search directory SEARCH_DIR to the user-defined library
+     search path. Return 0 on success.
+
+ - Function: int lt_dlsetsearchpath (const char *SEARCH_PATH)
+     Replace the current user-defined library search path with
+     SEARCH_PATH, which must be a colon-separated list of absolute
+     directories.  Return 0 on success.
+
+ - Function: const char * lt_dlgetsearchpath (void)
+     Return the current user-defined library search path.
+
+ - Variable: lt_ptr_t (* lt_dlmalloc ) (size_t size)
+ - Variable: void (* lt_dlfree ) (lt_ptr_t ptr)
+     These variables are set to `malloc' and `free', by default, but
+     you can set them to any other functions that provides equivalent
+     functionality.  However, you must not modify their values after
+     calling any libltdl function other than `lt_dlpreopen_default' or
+     the macro `LTDL_SET_PRELOADED_SYMBOLS'.
+
+
+File: libtool.info,  Node: Modules for libltdl,  Next: Distributing libltdl,  Prev: Libltdl interface,  Up: Using libltdl
+
+Creating modules that can be `dlopen'ed
+=======================================
+
+   Libtool modules are like normal libtool libraries with a few
+exceptions:
+
+   You have to link the module with libtool's `-module' switch, and you
+should link any program that is intended to dlopen the module with
+`-dlopen modulename.la' so that libtool can dlpreopen the module on
+platforms which don't support dlopening.  If the module depends on any
+other libraries, make sure you specify them either when you link the
+module or when you link programs that dlopen it.  If you want to
+disable *note Versioning:: for a specific module you should link it
+with the `-avoid-version' switch.  Note that libtool modules don't need
+to have a "lib" prefix.  However, automake 1.4 or higher is required to
+build such modules.
+
+   Usually a set of modules provide the same interface, i.e, exports
+the same symbols, so that a program can dlopen them without having to
+know more about their internals.  In order to avoid symbol conflicts
+all exported symbols must be prefixed with "modulename_LTX_"
+(`modulename' is the name of the module).  Internal symbols must be
+named in such a way that they won't conflict with other modules, for
+example, by prefixing them with "_modulename_".  Although some
+platforms support having the same symbols defined more than once it is
+generally not portable and it makes it impossible to dlpreopen such
+modules.  libltdl will automatically cut the prefix off to get the real
+name of the symbol.  Additionally, it supports modules which don't use
+a prefix so that you can also dlopen non-libtool modules.
+
+   `foo1.c' gives an example of a portable libtool module.  Exported
+symbols are prefixed with "foo1_LTX_", internal symbols with "_foo1_".
+Aliases are defined at the beginning so that the code is more readable.
+
+     /* aliases for the exported symbols */
+     #define foo	foo1_LTX_foo
+     #define bar	foo1_LTX_bar
+     
+     /* a global variable definition */
+     int bar = 1;
+     
+     /* a private function */
+     int _foo1_helper() {
+       return bar;
+     }
+     
+     /* an exported function */
+     int foo() {
+       return _foo_helper();
+     }
+
+The `Makefile.am' contains the necessary rules to build the module
+`foo1.la':
+
+     ...
+     lib_LTLIBRARIES = foo1.la
+     
+     foo1_la_SOURCES = foo1.c
+     foo1_la_LDFLAGS = -module
+     ...
+
+
+File: libtool.info,  Node: Distributing libltdl,  Prev: Modules for libltdl,  Up: Using libltdl
+
+How to distribute libltdl with your package
+===========================================
+
+   Even though libltdl is installed together with libtool, you may wish
+to include libltdl in the distribution of your package, for the
+convenience of users of your package that don't have libtool or libltdl
+installed.  In this case, you may decide which flavor of libltdl you
+want to use: a convenience library or an installable libtool library.
+
+   One advantage of the convenience library is that it is not
+installed, so the fact that you use libltdl will not be apparent to the
+user, and it will not overwrite a pre-installed version of libltdl a
+user might have.  On the other hand, if you want to upgrade libltdl for
+any reason (e.g. a bugfix) you'll have to recompile your package
+instead of just replacing an installed version of libltdl.  However, if
+your programs or libraries are linked with other libraries that use
+such a pre-installed version of libltdl, you may get linker errors or
+run-time crashes.  Another problem is that you cannot link the
+convenience library into more than one libtool library, then link a
+single program with these libraries, because you may get duplicate
+symbols. In general you can safely use the convenience library in
+programs which don't depend on other libraries that might use libltdl
+too.  In order to enable this flavor of libltdl, you should add the
+line `AC_LIBLTDL_CONVENIENCE' to your `configure.in', _before_
+`AM_PROG_LIBTOOL'.
+
+   In order to select the installable version of libltdl, you should
+add a call of the macro `AC_LIBLTDL_INSTALLABLE' to your `configure.in'
+_before_ `AM_PROG_LIBTOOL'.  This macro will check whether libltdl is
+already installed and, if not, request the libltdl embedded in your
+package to be built and installed.  Note, however, that no version
+checking is performed.  The user may override the test and determine
+that the libltdl embedded must be installed, regardless of the
+existence of another version, using the configure switch
+`--enable-ltdl-install'.
+
+   In order to embed libltdl into your package, just add `--ltdl' to
+the `libtoolize' command line. It will copy the libltdl sources to a
+subdirectory `libltdl' in your package.  Both macros accept an optional
+argument to specify the location of the `libltdl' directory. By the
+default both macros assume that it is `${top_builddir}/libltdl'.
+
+   Whatever macro you use, it is up to you to ensure that your
+`configure.in' will configure libltdl, using `AC_CONFIG_SUBDIRS', and
+that your `Makefile's will start sub-makes within libltdl's directory,
+using automake's SUBDIRS, for example.  Both macros define the shell
+variables LIBLTDL, to the link flag that you should use to link with
+libltdl, and INCLTDL, to the preprocessor flag that you should use to
+compile with programs that include `ltdl.h'.  It is up to you to use
+`AC_SUBST' to ensure that this variable will be available in
+`Makefile's, or add them to variables that are `AC_SUBST'ed by default,
+such as LIBS and CPPFLAGS.
+
+   If you're using the convenience libltdl, LIBLTDL will be the
+pathname for the convenience version of libltdl and INCLTDL will be
+`-I' followed by the directory that contains libltdl, both starting
+with `${top_builddir}/'.
+
+   If you request an installed version of libltdl and one is found(1),
+LIBLTDL will be set to `-lltdl' and INCLTDL will be empty (which is
+just a blind assumption that `ltdl.h' is somewhere in the include path
+if libltdl is in the library path).  If an installable version of
+libltdl must be built, its pathname, starting with `${top_builddir}/',
+will be stored in LIBLTDL, and INCLTDL will be set just like in the
+case of convenience library.
+
+   So, when you want to link a program with libltdl, be it a
+convenience, installed or installable library, just compile with
+`$(INCLTDL)' and link it with `$(LIBLTDL)', using libtool.
+
+   You should probably also add `AC_LIBTOOL_DLOPEN' to your
+`configure.in' _before_ `AM_PROG_LIBTOOL', otherwise libtool will
+assume no dlopening mechanism is supported, and revert to dlpreopening,
+which is probably not what you want.
+
+   Avoid using the `-static' or `-all-static' switches when linking
+programs with libltdl.  This will not work on all platforms, because
+the dlopening functions may not be available for static linking.
+
+   The following example shows you how to embed the convenience libltdl
+in your package.  In order to use the installable variant just replace
+`AC_LIBLTDL_CONVENIENCE' with `AC_LIBLTDL_INSTALLABLE'.  We assume that
+libltdl was embedded using `libtoolize --ltdl'.
+
+   configure.in:
+     ...
+     dnl Enable building of the convenience library
+     dnl and set LIBLTDL accordingly
+     AC_LIBLTDL_CONVENIENCE
+     dnl Substitute INCLTDL and LIBLTDL in the Makefiles
+     AC_SUBST(INCLTDL)
+     AC_SUBST(LIBLTDL)
+     dnl Check for dlopen support
+     AC_LIBTOOL_DLOPEN
+     dnl Configure libtool
+     AM_PROG_LIBTOOL
+     dnl Configure libltdl
+     AC_CONFIG_SUBDIRS(libltdl)
+     ...
+
+   Makefile.am:
+     ...
+     SUBDIRS = libltdl
+     
+     INCLUDES = $(INCLTDL)
+     
+     myprog_LDFLAGS = -export-dynamic
+     # The quotes around -dlopen below fool automake into accepting it
+     myprog_LDADD = $(LIBLTDL) "-dlopen" self "-dlopen" libfoo.la
+     myprog_DEPENDENCIES = $(LIBLTDL) libfoo.la
+     ...
+
+   ---------- Footnotes ----------
+
+   (1) Even if libltdl is installed, `AC_LIBLTDL_INSTALLABLE' may fail
+to detect it, if libltdl depends on symbols provided by libraries other
+than the C library.  In this case, it will needlessly build and install
+libltdl.
+
+
+File: libtool.info,  Node: Other languages,  Next: Troubleshooting,  Prev: Using libltdl,  Up: Top
+
+Using libtool with other languages
+**********************************
+
+   Libtool was first implemented in order to add support for writing
+shared libraries in the C language.  However, over time, libtool is
+being integrated with other languages, so that programmers are free to
+reap the benefits of shared libraries in their favorite programming
+language.
+
+   This chapter describes how libtool interacts with other languages,
+and what special considerations you need to make if you do not use C.
+
+* Menu:
+
+* C++ libraries::
+
+
+File: libtool.info,  Node: C++ libraries,  Up: Other languages
+
+Writing libraries for C++
+=========================
+
+   Creating libraries of C++ code should be a fairly straightforward
+process, because its object files differ from C ones in only three ways:
+
+  1. Because of name mangling, C++ libraries are only usable by the C++
+     compiler that created them.  This decision was made by the
+     designers of C++ in order to protect users from conflicting
+     implementations of features such as constructors, exception
+     handling, and RTTI.
+
+  2. On some systems, the C++ compiler must take special actions for the
+     dynamic linker to run dynamic (i.e., run-time) initializers.  This
+     means that we should not call `ld' directly to link such
+     libraries, and we should use the C++ compiler instead.
+
+  3. C++ compilers will link some Standard C++ library in by default,
+     but libtool does not know which are these libraries, so it cannot
+     even run the inter-library dependence analyzer to check how to
+     link it in.  Therefore, running `ld' to link a C++ program or
+     library is deemed to fail.  However, running the C++ compiler
+     directly may lead to problems related with inter-library
+     dependencies.
+
+   The conclusion is that libtool is not ready for general use for C++
+libraries.  You should avoid any global or static variable
+initializations that would cause an "initializer element is not
+constant" error if you compiled them with a standard C compiler.
+
+   There are other ways of working around this problem, but they are
+beyond the scope of this manual.
+
+   Furthermore, you'd better find out, at configure time, what are the
+C++ Standard libraries that the C++ compiler will link in by default,
+and explicitly list them in the link command line.  Hopefully, in the
+future, libtool will be able to do this job by itself.
+
+
+File: libtool.info,  Node: Troubleshooting,  Next: Maintaining,  Prev: Other languages,  Up: Top
+
+Troubleshooting
+***************
+
+   Libtool is under constant development, changing to remain up-to-date
+with modern operating systems.  If libtool doesn't work the way you
+think it should on your platform, you should read this chapter to help
+determine what the problem is, and how to resolve it.
+
+* Menu:
+
+* Libtool test suite::          Libtool's self-tests.
+* Reporting bugs::              How to report problems with libtool.
+
+
+File: libtool.info,  Node: Libtool test suite,  Next: Reporting bugs,  Up: Troubleshooting
+
+The libtool test suite
+======================
+
+   Libtool comes with its own set of programs that test its
+capabilities, and report obvious bugs in the libtool program.  These
+tests, too, are constantly evolving, based on past problems with
+libtool, and known deficiencies in other operating systems.
+
+   As described in the `INSTALL' file, you may run `make check' after
+you have built libtool (possibly before you install it) in order to
+make sure that it meets basic functional requirements.
+
+* Menu:
+
+* Test descriptions::           The contents of the test suite.
+* When tests fail::             What to do when a test fails.
+
+
+File: libtool.info,  Node: Test descriptions,  Next: When tests fail,  Up: Libtool test suite
+
+Description of test suite
+-------------------------
+
+   Here is a list of the current programs in the test suite, and what
+they test for:
+
+`cdemo-conf.test'
+`cdemo-exec.test'
+`cdemo-make.test'
+`cdemo-static.test'
+`cdemo-shared.test'
+     These programs check to see that the `cdemo' subdirectory of the
+     libtool distribution can be configured and built correctly.
+
+     The `cdemo' subdirectory contains a demonstration of libtool
+     convenience libraries, a mechanism that allows build-time static
+     libraries to be created, in a way that their components can be
+     later linked into programs or other libraries, even shared ones.
+
+     The tests `cdemo-make.test' and `cdemo-exec.test' are executed
+     three times, under three different libtool configurations:
+     `cdemo-conf.test' configures `cdemo/libtool' to build both static
+     and shared libraries (the default for platforms that support
+     both), `cdemo-static.test' builds only static libraries
+     (`--disable-shared'), and `cdemo-shared.test' builds only shared
+     libraries (`--disable-static').
+
+`demo-conf.test'
+`demo-exec.test'
+`demo-inst.test'
+`demo-make.test'
+`demo-unst.test'
+`demo-static.test'
+`demo-shared.test'
+`demo-nofast.test'
+     These programs check to see that the `demo' subdirectory of the
+     libtool distribution can be configured, built, installed, and
+     uninstalled correctly.
+
+     The `demo' subdirectory contains a demonstration of a trivial
+     package that uses libtool.  The tests `demo-make.test',
+     `demo-exec.test', `demo-inst.test' and `demo-unst.test' are
+     executed four times, under four different libtool configurations:
+     `demo-conf.test' configures `demo/libtool' to build both static
+     and shared libraries, `demo-static.test' builds only static
+     libraries (`--disable-shared'), and `demo-shared.test' builds only
+     shared libraries (`--disable-static').  `demo-nofast.test'
+     configures `demo/libtool' to disable the fast-install mode
+     (`--enable-fast-install=no'.
+
+`deplibs.test'
+     Many systems cannot link static libraries into shared libraries.
+     libtool uses a `deplibs_check_method' to prevent such cases.  This
+     tests checks whether libtool's `deplibs_check_method' works
+     properly.
+
+`hardcode.test'
+     On all systems with shared libraries, the location of the library
+     can be encoded in executables that are linked against it *note
+     Linking executables::.  This test checks the conditions under
+     which your system linker hardcodes the library location, and
+     guarantees that they correspond to libtool's own notion of how
+     your linker behaves.
+
+`build-relink.test'
+     Checks whether variable SHLIBPATH_OVERRIDES_RUNPATH is properly
+     set.  If the test fails and VERBOSE is set, it will indicate what
+     the variable should have been set to.
+
+`noinst-link.test'
+     Checks whether libtool will not try to link with a previously
+     installed version of a library when it should be linking with a
+     just-built one.
+
+`mdemo-conf.test'
+`mdemo-exec.test'
+`mdemo-inst.test'
+`mdemo-make.test'
+`mdemo-unst.test'
+`mdemo-static.test'
+`mdemo-shared.test'
+     These programs check to see that the `mdemo' subdirectory of the
+     libtool distribution can be configured, built, installed, and
+     uninstalled correctly.
+
+     The `mdemo' subdirectory contains a demonstration of a package that
+     uses libtool and the system independent dlopen wrapper `libltdl' to
+     load modules.  The library `libltdl' provides a dlopen wrapper for
+     various platforms (Linux, Solaris, HP/UX etc.) including support
+     for dlpreopened modules (*note Dlpreopening::).
+
+     The tests `mdemo-make.test', `mdemo-exec.test', `mdemo-inst.test'
+     and `mdemo-unst.test' are executed three times, under three
+     different libtool configurations: `mdemo-conf.test' configures
+     `mdemo/libtool' to build both static and shared libraries,
+     `mdemo-static.test' builds only static libraries
+     (`--disable-shared'), and `mdemo-shared.test' builds only shared
+     libraries (`--disable-static').
+
+`dryrun.test'
+     This test checks whether libtool's `--dry-run' mode works properly.
+
+`assign.test'
+     Checks whether we don't put break or continue on the same line as
+     an assignment in the libtool script.
+
+`link.test'
+     This test guarantees that linking directly against a non-libtool
+     static library works properly.
+
+`link-2.test'
+     This test makes sure that files ending in `.lo' are never linked
+     directly into a program file.
+
+`nomode.test'
+     Check whether we can actually get help for libtool.
+
+`quote.test'
+     This program checks libtool's metacharacter quoting.
+
+`sh.test'
+     Checks whether a `test' command was forgotten in libtool.
+
+`suffix.test'
+     When other programming languages are used with libtool (*note
+     Other languages::), the source files may end in suffixes other
+     than `.c'.  This test validates that libtool can handle suffixes
+     for all the file types that it supports, and that it fails when
+     the suffix is invalid.
+
+
+File: libtool.info,  Node: When tests fail,  Prev: Test descriptions,  Up: Libtool test suite
+
+When tests fail
+---------------
+
+   Each of the above tests are designed to produce no output when they
+are run via `make check'.  The exit status of each program tells the
+`Makefile' whether or not the test succeeded.
+
+   If a test fails, it means that there is either a programming error in
+libtool, or in the test program itself.
+
+   To investigate a particular test, you may run it directly, as you
+would a normal program.  When the test is invoked in this way, it
+produces output which may be useful in determining what the problem is.
+
+   Another way to have the test programs produce output is to set the
+VERBOSE environment variable to `yes' before running them.  For
+example, `env VERBOSE=yes make check' runs all the tests, and has each
+of them display debugging information.
+
+
+File: libtool.info,  Node: Reporting bugs,  Prev: Libtool test suite,  Up: Troubleshooting
+
+Reporting bugs
+==============
+
+   If you think you have discovered a bug in libtool, you should think
+twice: the libtool maintainer is notorious for passing the buck (or
+maybe that should be "passing the bug").  Libtool was invented to fix
+known deficiencies in shared library implementations, so, in a way, most
+of the bugs in libtool are actually bugs in other operating systems.
+However, the libtool maintainer would definitely be happy to add support
+for somebody else's buggy operating system.  [I wish there was a good
+way to do winking smiley-faces in Texinfo.]
+
+   Genuine bugs in libtool include problems with shell script
+portability, documentation errors, and failures in the test suite
+(*note Libtool test suite::).
+
+   First, check the documentation and help screens to make sure that the
+behaviour you think is a problem is not already mentioned as a feature.
+
+   Then, you should read the Emacs guide to reporting bugs (*note
+Reporting Bugs: (emacs)Bugs).  Some of the details listed there are
+specific to Emacs, but the principle behind them is a general one.
+
+   Finally, send a bug report to the libtool bug reporting address
+<bug-libtool@gnu.org> with any appropriate _facts_, such as test suite
+output (*note When tests fail::), all the details needed to reproduce
+the bug, and a brief description of why you think the behaviour is a
+bug.  Be sure to include the word "libtool" in the subject line, as
+well as the version number you are using (which can be found by typing
+`ltconfig --version').
+
+
+File: libtool.info,  Node: Maintaining,  Next: Index,  Prev: Troubleshooting,  Up: Top
+
+Maintenance notes for libtool
+*****************************
+
+   This chapter contains information that the libtool maintainer finds
+important.  It will be of no use to you unless you are considering
+porting libtool to new systems, or writing your own libtool.
+
+* Menu:
+
+* New ports::                   How to port libtool to new systems.
+* Tested platforms::            When libtool was last tested.
+* Platform quirks::             Information about different library systems.
+* libtool script contents::     Configuration information that libtool uses.
+* Cheap tricks::                Making libtool maintainership easier.
+
+
+File: libtool.info,  Node: New ports,  Next: Tested platforms,  Up: Maintaining
+
+Porting libtool to new systems
+==============================
+
+   Before you embark on porting libtool to an unsupported system, it is
+worthwhile to send e-mail to the libtool mailing list
+<libtool@gnu.org>, to make sure that you are not duplicating existing
+work.
+
+   If you find that any porting documentation is missing, please
+complain!  Complaints with patches and improvements to the
+documentation, or to libtool itself, are more than welcome.
+
+* Menu:
+
+* Information sources::         Where to find relevant documentation
+* Porting inter-library dependencies::  Implementation details explained
+
+
+File: libtool.info,  Node: Information sources,  Next: Porting inter-library dependencies,  Up: New ports
+
+Information sources
+-------------------
+
+   Once it is clear that a new port is necessary, you'll generally need
+the following information:
+
+canonical system name
+     You need the output of `config.guess' for this system, so that you
+     can make changes to the libtool configuration process without
+     affecting other systems.
+
+man pages for `ld' and `cc'
+     These generally describe what flags are used to generate PIC, to
+     create shared libraries, and to link against only static
+     libraries.  You may need to follow some cross references to find
+     the information that is required.
+
+man pages for `ld.so', `rtld', or equivalent
+     These are a valuable resource for understanding how shared
+     libraries are loaded on the system.
+
+man page for `ldconfig', or equivalent
+     This page usually describes how to install shared libraries.
+
+output from `ls -l /lib /usr/lib'
+     This shows the naming convention for shared libraries on the
+     system, including which names should be symbolic links.
+
+any additional documentation
+     Some systems have special documentation on how to build and install
+     shared libraries.
+
+   If you know how to program the Bourne shell, then you can complete
+the port yourself; otherwise, you'll have to find somebody with the
+relevant skills who will do the work.  People on the libtool mailing
+list are usually willing to volunteer to help you with new ports, so
+you can send the information to them.
+
+   To do the port yourself, you'll definitely need to modify the
+`ltconfig' script in order to make platform-specific changes to the
+configuration process.  You should search the script for the `PORTME'
+keyword, which will give you some hints on what you'll need to change.
+In general, all that is involved is modifying the appropriate
+configuration variables (*note libtool script contents::).
+
+   Your best bet is to find an already-supported system that is similar
+to yours, and make your changes based on that.  In some cases, however,
+your system will differ significantly from every other supported system,
+and it may be necessary to add new configuration variables, and modify
+the `ltmain.sh' script accordingly.  Be sure to write to the mailing
+list before you make changes to `ltmain.sh', since they may have advice
+on the most effective way of accomplishing what you want.
+
+
+File: libtool.info,  Node: Porting inter-library dependencies,  Prev: Information sources,  Up: New ports
+
+Porting inter-library dependencies support
+------------------------------------------
+
+   Since version 1.2c, libtool has re-introduced the ability to do
+inter-library dependency on some platforms, thanks to a patch by Toshio
+Kuratomi <badger@prtr-13.ucsc.edu>.  Here's a shortened version of the
+message that contained his patch:
+
+   The basic architecture is this: in `ltconfig.in', the person who
+writes libtool makes sure `$deplibs' is included in `$archive_cmds'
+somewhere and also sets the variable `$deplibs_check_method', and maybe
+`$file_magic_cmd' when `deplibs_check_method' is file_magic.
+
+   `deplibs_check_method' can be one of five things:
+`file_magic [REGEX]'
+     looks in the library link path for libraries that have the right
+     libname.  Then it runs `$file_magic_cmd' on the library and checks
+     for a match against `regex' using `egrep'.  When
+     FILE_MAGIC_TEST_FILE is set in `ltconfig', it is used as an
+     argument to `$file_magic_cmd' in order to verify whether the
+     regular expression matches its output, and warn the user otherwise.
+
+`test_compile'
+     just checks whether it is possible to link a program out of a list
+     of libraries, and checks which of those are listed in the output of
+     `ldd'.  It is currently unused, and will probably be dropped in the
+     future.
+
+`pass_all'
+     will pass everything without any checking.  This may work on
+     platforms in which code is position-independent by default and
+     inter-library dependencies are properly supported by the dynamic
+     linker, for example, on DEC OSF/1 3 and 4.
+
+`none'
+     It causes deplibs to be reassigned deplibs="".  That way
+     `archive_cmds' can contain deplibs on all platforms, but not have
+     deplibs used unless needed.
+
+`unknown'
+     is the default for all systems unless overridden in `ltconfig.in'.
+     It is the same as `none', but it documents that we really don't
+     know what the correct value should be, and we welcome patches that
+     improve it.
+
+   Then in `ltmain.in' we have the real workhorse: a little
+initialization and postprocessing (to setup/release variables for use
+with eval echo libname_spec etc.) and a case statement that decides
+which method is being used.  This is the real code... I wish I could
+condense it a little more, but I don't think I can without function
+calls.  I've mostly optimized it (moved things out of loops, etc) but
+there is probably some fat left.  I thought I should stop while I was
+ahead, work on whatever bugs you discover, etc before thinking about
+more than obvious optimizations.
+
+
+File: libtool.info,  Node: Tested platforms,  Next: Platform quirks,  Prev: New ports,  Up: Maintaining
+
+Tested platforms
+================
+
+   This table describes when libtool was last known to be tested on
+platforms where it claims to support shared libraries:
+
+     -------------------------------------------------------
+     canonical host name          compiler  libtool results
+       (tools versions)                     release
+     -------------------------------------------------------
+     alpha-dec-osf4.0*               gcc      1.3.3    ok
+       (egcs-1.1.2)
+     alpha-dec-osf4.0*               cc       1.3.3    ok
+     alpha-dec-osf3.2                gcc      0.8      ok
+     alpha-dec-osf3.2                cc       0.8      ok
+     alpha-dec-osf2.1                gcc      1.2f     NS
+     alpha*-unknown-linux-gnu        gcc      1.3.3    ok
+       (egcs-1.1.2, GNU ld 2.9.1.0.23)
+     hppa2.0w-hp-hpux11.00           cc       1.2f     ok
+     hppa2.0-hp-hpux10.20            cc       1.3.4    ok
+     hppa1.1-hp-hpux10.20            gcc      1.3.4    ok
+     hppa1.1-hp-hpux10.20            cc       1.3.4    ok
+     hppa1.1-hp-hpux10.10            gcc      1.2f     ok
+     hppa1.1-hp-hpux10.10            cc       1.2f     ok
+     hppa1.1-hp-hpux9.07             gcc      1.2f     ok
+     hppa1.1-hp-hpux9.07             cc       1.2f     ok
+     hppa1.1-hp-hpux9.05             gcc      1.2f     ok
+     hppa1.1-hp-hpux9.05             cc       1.2f     ok
+     hppa1.1-hp-hpux9.01             gcc      1.2f     ok
+     hppa1.1-hp-hpux9.01             cc       1.2f     ok
+     i*86-*-beos                     gcc      1.2f     ok
+     i*86-*-bsdi4.0                  gcc      1.2f     ok
+     i*86-*-bsdi4.0.1                gcc      1.2f     ok
+     i*86-*-bsdi3.1                  gcc      1.2e     NS
+     i*86-*-bsdi3.0                  gcc      1.2e     NS
+     i*86-*-bsdi2.1                  gcc      1.2e     NS
+     i*86-pc-cygwin                  gcc      1.3.4    NS
+       (egcs-1.1 stock b20.1 compiler)
+     i*86-*-dguxR4.20MU01            gcc      1.2      ok
+     i*86-*-freebsdelf4.0            gcc      1.2f     ok
+     i*86-*-freebsdelf3.1            gcc      1.2f     ok
+     i*86-*-freebsd3.0               gcc      1.2e     ok
+     i*86-*-freebsd2.2.8             gcc      1.2f     ok
+     i*86-*-freebsd2.2.6             gcc      1.3.3    ok
+       (egcs-1.1 & gcc-2.7.2.1, native ld)
+     i*86-*-freebsd2.1.5             gcc      0.5      ok
+     i*86-*-gnu                      gcc      1.3.3    ok
+     i*86-*-netbsd1.4                gcc      1.3      ok
+       (egcs-1.1.1)
+     i*86-*-netbsd1.3.3              gcc      1.3      ok
+       (gcc-2.7.2.2)
+     i*86-*-netbsd1.3.2              gcc      1.2e     ok
+     i*86-*-netbsd1.3I               gcc      1.2e     ok
+       (egcs 1.1?)
+     i*86-*-netbsd1.2                gcc      0.9g     ok
+     i*86-*-linux-gnu                gcc      1.3.4    ok
+       (gcc-2.95.2, GNU ld 2.9.5)
+     i*86-*-linux-gnulibc1           gcc      1.2f     ok
+     i*86-*-openbsd2.4               gcc      1.2f     ok
+     i*86-*-solaris2.7               gcc      1.3.3    ok
+       (egcs-1.1.2, native ld)
+     i*86-*-solaris2.6               gcc      1.2f     ok
+     i*86-*-solaris2.5.1             gcc      1.2f     ok
+     i*86-ncr-sysv4.3.03             gcc      1.2f     ok
+     i*86-ncr-sysv4.3.03             cc       1.2e     ok
+       (cc -Hnocopyr)
+     m68k-next-nextstep3             gcc      1.2f     NS
+     m68k-sun-sunos4.1.1             gcc      1.2f     NS
+       (gcc-2.5.7)
+     m88k-dg-dguxR4.12TMU01          gcc      1.2      ok
+     m88k-motorola-sysv4             gcc      1.3      ok
+       (egcs-1.1.2)
+     mips-sgi-irix6.5                gcc      1.2f     ok
+       (gcc-2.8.1)
+     mips-sgi-irix6.4                gcc      1.2f     ok
+     mips-sgi-irix6.3                gcc      1.3.3    ok
+       (egcs-1.1.2, native ld)
+     mips-sgi-irix6.3                cc       1.3.3    ok
+       (cc 7.0)
+     mips-sgi-irix6.2                gcc      1.2f     ok
+     mips-sgi-irix6.2                cc       0.9      ok
+     mips-sgi-irix5.3                gcc      1.2f     ok
+       (egcs-1.1.1)
+     mips-sgi-irix5.3                gcc      1.2f     NS
+       (gcc-2.6.3)
+     mips-sgi-irix5.3                cc       0.8      ok
+     mips-sgi-irix5.2                gcc      1.3.3    ok
+       (egcs-1.1.2, native ld)
+     mips-sgi-irix5.2                cc       1.3.3    ok
+       (cc 3.18)
+     mipsel-unknown-openbsd2.1       gcc      1.0      ok
+     powerpc-ibm-aix4.3.1.0          gcc      1.2f     ok
+       (egcs-1.1.1)
+     powerpc-ibm-aix4.2.1.0          gcc      1.2f     ok
+       (egcs-1.1.1)
+     powerpc-ibm-aix4.1.5.0          gcc      1.2f     ok
+       (egcs-1.1.1)
+     powerpc-ibm-aix4.1.5.0          gcc      1.2f     NS
+       (gcc-2.8.1)
+     powerpc-ibm-aix4.1.4.0          gcc      1.0      ok
+     powerpc-ibm-aix4.1.4.0          xlc      1.0i     ok
+     rs6000-ibm-aix4.1.5.0           gcc      1.2f     ok
+       (gcc-2.7.2)
+     rs6000-ibm-aix4.1.4.0           gcc      1.2f     ok
+       (gcc-2.7.2)
+     rs6000-ibm-aix3.2.5             gcc      1.0i     ok
+     rs6000-ibm-aix3.2.5             xlc      1.0i     ok
+     sparc-sun-solaris2.7            gcc      1.3.3    ok
+       (egcs-1.1.2, GNU ld 2.9.1 & native ld)
+     sparc-sun-solaris2.6            gcc      1.3.2    ok
+       (egcs-1.1.2, GNU ld 2.9.1 & native ld)
+     sparc-sun-solaris2.5.1          gcc      1.2f     ok
+     sparc-sun-solaris2.5            gcc      1.3.3    ok
+       (egcs-1.1.2, GNU ld 2.9.1 & native ld)
+     sparc-sun-solaris2.5            cc       1.3.3    ok
+       (SC 3.0.1)
+     sparc-sun-solaris2.4            gcc      1.0a     ok
+     sparc-sun-solaris2.4            cc       1.0a     ok
+     sparc-sun-solaris2.3            gcc      1.2f     ok
+     sparc-sun-sunos4.1.4            gcc      1.2f     ok
+     sparc-sun-sunos4.1.4            cc       1.0f     ok
+     sparc-sun-sunos4.1.3_U1         gcc      1.2f     ok
+     sparc-sun-sunos4.1.3C           gcc      1.2f     ok
+     sparc-sun-sunos4.1.3            gcc      1.3.3    ok
+       (egcs-1.1.2, GNU ld 2.9.1 & native ld)
+     sparc-sun-sunos4.1.3            cc       1.3.3    ok
+     sparc-unknown-bsdi4.0           gcc      1.2c     ok
+     sparc-unknown-linux-gnulibc1    gcc      1.2f     ok
+     sparc-unknown-linux-gnu         gcc      1.3.3    ok
+       (egcs-1.1.2, GNU ld 2.9.1.0.23)
+     sparc64-unknown-linux-gnu       gcc      1.2f     ok
+     
+     Notes:
+     - "ok" means "all tests passed".
+     - "NS" means "Not Shared", but OK for static libraries
+
+   Note: The vendor-distributed HP-UX `sed'(1) programs are horribly
+broken, and cannot handle libtool's requirements, so users may report
+unusual problems.  There is no workaround except to install a working
+`sed' (such as GNU `sed') on these systems.
+
+   Note: The vendor-distributed NCR MP-RAS `cc' programs emits
+copyright on standard error that confuse tests on size of
+`conftest.err'.  The workaround is to specify `CC' when run `configure'
+with `CC='cc -Hnocopyr''.
+
+
+File: libtool.info,  Node: Platform quirks,  Next: libtool script contents,  Prev: Tested platforms,  Up: Maintaining
+
+Platform quirks
+===============
+
+   This section is dedicated to the sanity of the libtool maintainers.
+It describes the programs that libtool uses, how they vary from system
+to system, and how to test for them.
+
+   Because libtool is a shell script, it can be difficult to understand
+just by reading it from top to bottom.  This section helps show why
+libtool does things a certain way.  Combined with the scripts
+themselves, you should have a better sense of how to improve libtool, or
+write your own.
+
+* Menu:
+
+* References::                  Finding more information.
+* Compilers::                   Creating object files from source files.
+* Reloadable objects::          Binding object files together.
+* Archivers::                   Programs that create static archives.
+
+
+File: libtool.info,  Node: References,  Next: Compilers,  Up: Platform quirks
+
+References
+----------
+
+   The following is a list of valuable documentation references:
+
+   * SGI's IRIX Manual Pages, which can be found at
+     <http://techpubs.sgi.com/cgi-bin/infosrch.cgi?cmd=browse&db=man>.
+
+   * Sun's free service area
+     (<http://www.sun.com/service/online/free.html>) and documentation
+     server (<http://docs.sun.com/>).
+
+
+File: libtool.info,  Node: Compilers,  Next: Reloadable objects,  Prev: References,  Up: Platform quirks
+
+Compilers
+---------
+
+   The only compiler characteristics that affect libtool are the flags
+needed (if any) to generate PIC objects.  In general, if a C compiler
+supports certain PIC flags, then any derivative compilers support the
+same flags.  Until there are some noteworthy exceptions to this rule,
+this section will document only C compilers.
+
+   The following C compilers have standard command line options,
+regardless of the platform:
+
+`gcc'
+     This is the GNU C compiler, which is also the system compiler for
+     many free operating systems (FreeBSD, GNU/Hurd, GNU/Linux, Lites,
+     NetBSD, and OpenBSD, to name a few).
+
+     The `-fpic' or `-fPIC' flags can be used to generate
+     position-independent code.  `-fPIC' is guaranteed to generate
+     working code, but the code is slower on m68k, m88k, and Sparc
+     chips.  However, using `-fpic' on those chips imposes arbitrary
+     size limits on the shared libraries.
+
+   The rest of this subsection lists compilers by the operating system
+that they are bundled with:
+
+`aix3*'
+`aix4*'
+     AIX compilers have no PIC flags, since AIX has been ported only to
+     PowerPC and RS/6000 chips. (1)
+
+`hpux10*'
+     Use `+Z' to generate PIC.
+
+`osf3*'
+     Digital/UNIX 3.x does not have PIC flags, at least not on the
+     PowerPC platform.
+
+`solaris2*'
+     Use `-KPIC' to generate PIC.
+
+`sunos4*'
+     Use `-PIC' to generate PIC.
+
+   ---------- Footnotes ----------
+
+   (1) All code compiled for the PowerPC and RS/6000 chips
+(`powerpc-*-*', `powerpcle-*-*', and `rs6000-*-*') is
+position-independent, regardless of the operating system or compiler
+suite.  So, "regular objects" can be used to build shared libraries on
+these systems and no special PIC compiler flags are required.
+
+
+File: libtool.info,  Node: Reloadable objects,  Next: Archivers,  Prev: Compilers,  Up: Platform quirks
+
+Reloadable objects
+------------------
+
+   On all known systems, a reloadable object can be created by running
+`ld -r -o OUTPUT.o INPUT1.o INPUT2.o'.  This reloadable object may be
+treated as exactly equivalent to other objects.
+
+
+File: libtool.info,  Node: Archivers,  Prev: Reloadable objects,  Up: Platform quirks
+
+Archivers
+---------
+
+   On all known systems, building a static library can be accomplished
+by running `ar cru libNAME.a OBJ1.o OBJ2.o ...', where the `.a' file is
+the output library, and each `.o' file is an object file.
+
+   On all known systems, if there is a program named `ranlib', then it
+must be used to "bless" the created library before linking against it,
+with the `ranlib libNAME.a' command.  Some systems, like Irix, use the
+`ar ts' command, instead.
+

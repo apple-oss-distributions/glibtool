@@ -1,0 +1,25 @@
+#! /bin/sh
+# link.test - check that .lo files aren't made into programs.
+
+# Test script header.
+need_prefix=no
+if test -z "$srcdir"; then
+  srcdir=`echo "$0" | sed 's%/[^/]*$%%'`
+  test "$srcdir" = "$0" && srcdir=.
+  test "${VERBOSE+set}" != "set" && VERBOSE=yes
+fi
+. $srcdir/defs || exit 1
+
+# Try a sample link command.
+linkresult=`$libtool -n --mode=link gcc -o something foo.o hell.lo`
+
+test $? -eq 0 || exit 1
+
+echo "$linkresult"
+case "$linkresult" in
+*".lo "*)
+  echo "$0: .lo files should not be linked into programs"
+  exit 1
+  ;;
+esac
+exit 0
