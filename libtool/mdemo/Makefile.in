@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p5a from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -59,10 +59,16 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 host_alias = @host_alias@
 host_triplet = @host@
+AMTAR = @AMTAR@
 AS = @AS@
+AWK = @AWK@
 CC = @CC@
+DEPDIR = @DEPDIR@
 DLLTOOL = @DLLTOOL@
+ECHO = @ECHO@
 EXEEXT = @EXEEXT@
+INCLTDL = @INCLTDL@
+INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LIBLTDL = @LIBLTDL@
 LIBM = @LIBM@
 LIBTOOL = @LIBTOOL@
@@ -70,26 +76,34 @@ LIBTOOL_DEPS = @LIBTOOL_DEPS@
 LN_S = @LN_S@
 MAKEINFO = @MAKEINFO@
 OBJDUMP = @OBJDUMP@
+OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
 STATIC = @STATIC@
+STRIP = @STRIP@
 VERSION = @VERSION@
+am__include = @am__include@
+am__quote = @am__quote@
+install_sh = @install_sh@
 
 AUTOMAKE_OPTIONS = no-dependencies foreign
 
-INCLUDES = -I$(srcdir)/../libltdl
+INCLUDES = $(INCLTDL)
 
 EXTRA_DIST = acinclude.m4
 
-lib_LTLIBRARIES = foo1.la libfoo2.la
+lib_LTLIBRARIES = libsub.la foo1.la libfoo2.la
 
 foo1_la_SOURCES = foo1.c
-foo1_la_LIBADD = $(LIBM)
+foo1_la_LIBADD = $(LIBM) libsub.la
 foo1_la_LDFLAGS = -module -avoid-version
 
 libfoo2_la_SOURCES = foo2.c
-libfoo2_la_LIBADD = $(LIBM)
-libfoo2_la_LDFLAGS = -module -export-symbols-regex "libfoo2.*"
+libfoo2_la_LIBADD = $(LIBM) libsub.la
+libfoo2_la_LDFLAGS = -no-undefined -module -export-symbols-regex "libfoo2.*"
+
+libsub_la_SOURCES = sub.c
+libsub_la_LDFLAGS = -no-undefined
 
 noinst_HEADERS = foo.h
 
@@ -98,9 +112,9 @@ bin_PROGRAMS = mdemo mdemo.static
 # Create a version of mdemo that does dlopen.
 mdemo_SOURCES = main.c
 mdemo_LDFLAGS = -export-dynamic
-mdemo_LDADD = @LIBLTDL@ "-dlopen" self 		"-dlopen" foo1.la "-dlopen" libfoo2.la
+mdemo_LDADD = @LIBLTDL@ libsub.la "-dlopen" self 		"-dlopen" foo1.la "-dlopen" libfoo2.la
 
-mdemo_DEPENDENCIES = @LIBLTDL@ foo1.la libfoo2.la
+mdemo_DEPENDENCIES = @LIBLTDL@ libsub.la foo1.la libfoo2.la
 
 # Create a statically linked version of mdemo.
 mdemo_static_SOURCES = $(mdemo_SOURCES)
@@ -117,15 +131,17 @@ DEFS = @DEFS@ -I. -I$(srcdir)
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
-foo1_la_DEPENDENCIES = 
+libsub_la_LIBADD = 
+libsub_la_OBJECTS =  sub.lo
+foo1_la_DEPENDENCIES =  libsub.la
 foo1_la_OBJECTS =  foo1.lo
-libfoo2_la_DEPENDENCIES = 
+libfoo2_la_DEPENDENCIES =  libsub.la
 libfoo2_la_OBJECTS =  foo2.lo
 bin_PROGRAMS =  mdemo$(EXEEXT) mdemo.static
 PROGRAMS =  $(bin_PROGRAMS)
 
-mdemo_OBJECTS =  main.o
-mdemo_static_OBJECTS =  main.o
+mdemo_OBJECTS =  main.$(OBJEXT)
+mdemo_static_OBJECTS =  main.$(OBJEXT)
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -139,14 +155,14 @@ configure configure.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
-SOURCES = $(foo1_la_SOURCES) $(libfoo2_la_SOURCES) $(mdemo_SOURCES) $(mdemo_static_SOURCES)
-OBJECTS = $(foo1_la_OBJECTS) $(libfoo2_la_OBJECTS) $(mdemo_OBJECTS) $(mdemo_static_OBJECTS)
+SOURCES = $(libsub_la_SOURCES) $(foo1_la_SOURCES) $(libfoo2_la_SOURCES) $(mdemo_SOURCES) $(mdemo_static_SOURCES)
+OBJECTS = $(libsub_la_OBJECTS) $(foo1_la_OBJECTS) $(libfoo2_la_OBJECTS) $(mdemo_OBJECTS) $(mdemo_static_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
-.SUFFIXES: .S .c .lo .o .s
+.SUFFIXES: .S .c .lo .o .obj .s
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
 	cd $(top_srcdir) && $(AUTOMAKE) --foreign Makefile
 
@@ -190,6 +206,11 @@ uninstall-libLTLIBRARIES:
 .c.o:
 	$(COMPILE) -c $<
 
+# FIXME: We should only use cygpath when building on Windows,
+# and only if it is available.
+.c.obj:
+	$(COMPILE) -c `cygpath -w $<`
+
 .s.o:
 	$(COMPILE) -c $<
 
@@ -198,6 +219,7 @@ uninstall-libLTLIBRARIES:
 
 mostlyclean-compile:
 	-rm -f *.o core *.core
+	-rm -f *.$(OBJEXT)
 
 clean-compile:
 
@@ -224,6 +246,9 @@ clean-libtool:
 distclean-libtool:
 
 maintainer-clean-libtool:
+
+libsub.la: $(libsub_la_OBJECTS) $(libsub_la_DEPENDENCIES)
+	$(LINK) -rpath $(libdir) $(libsub_la_LDFLAGS) $(libsub_la_OBJECTS) $(libsub_la_LIBADD) $(LIBS)
 
 foo1.la: $(foo1_la_OBJECTS) $(foo1_la_DEPENDENCIES)
 	$(LINK) -rpath $(libdir) $(foo1_la_LDFLAGS) $(foo1_la_OBJECTS) $(foo1_la_LIBADD) $(LIBS)

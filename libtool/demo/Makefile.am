@@ -15,7 +15,7 @@ include_HEADERS = foo.h
 if BINARY_HELLDL
 BUILD_helldl = helldl
 else
-BUILD_helldl = 
+BUILD_helldl =
 endif
 
 bin_PROGRAMS = hell hell.static $(BUILD_helldl)
@@ -40,7 +40,7 @@ else
 
 bin_SCRIPTS = helldl
 # create a script that says that -dlopen is not supported
-helldl:
+helldl helldl$(EXEEXT):
 	rm -f $@
 	echo '#! /bin/sh' > $@
 	echo '-dlopen is unsupported' >> $@
@@ -120,7 +120,7 @@ hc-minusL: $(hell_OBJECTS) $(hell_DEPENDENCIES)
 # If this one passes with pass_all, it is likely that pass_all works
 EXTRA_LIBRARIES = libhell0.a
 libhell0_a_SOURCES = hello.c foo.c
-EXTRA_LTLIBRARIES += libhell1.la libhell2.la
+EXTRA_LTLIBRARIES = libhell1.la libhell2.la
 libhell1_la_SOURCES = hell1.c
 libhell1_la_LIBADD = -L. -lhell0
 libhell1_la_LDFLAGS = -rpath $(libdir)
@@ -129,7 +129,7 @@ libhell2_la_SOURCES = hell2.c
 libhell2_la_LIBADD = -L. -lhell0
 libhell2_la_LDFLAGS = -rpath $(libdir)
 libhell2_la_DEPENDENCIES = libhell0.a
-EXTRA_PROGRAMS += hell0
+EXTRA_PROGRAMS = hell0
 hell0_SOURCES = main.c
 hell0_LDADD = libhell1.la libhell2.la $(LIBM)
 

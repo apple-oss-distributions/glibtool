@@ -1,4 +1,4 @@
-This is libtool.info, produced by makeinfo version 3.12k from
+This is libtool.info, produced by makeinfo version 4.0 from
 libtool.texi.
 
 INFO-DIR-SECTION GNU programming tools
@@ -11,23 +11,41 @@ START-INFO-DIR-ENTRY
 * libtoolize: (libtool)Invoking libtoolize.     Adding libtool support.
 END-INFO-DIR-ENTRY
 
-   This file documents GNU Libtool 1.3.5
+   This file documents GNU Libtool 1.4.2
 
-   Copyright (C) 1996-1999 Free Software Foundation, Inc.
+   Copyright (C) 1996-2000 Free Software Foundation, Inc.
 
-   Permission is granted to make and distribute verbatim copies of this
-manual provided the copyright notice and this permission notice are
-preserved on all copies.
+   Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.1 or
+any later version published by the Free Software Foundation; with the
+no Invariant Sections, with no Front-Cover Texts, and with no
+Back-Cover Texts.  A copy of the license is included in the section
+entitled "GNU Free Documentation License".
 
-   Permission is granted to copy and distribute modified versions of
-this manual under the conditions for verbatim copying, provided that the
-entire resulting derived work is distributed under the terms of a
-permission notice identical to this one.
+
+File: libtool.info,  Node: Makefile rules,  Next: Using Automake,  Up: Integrating libtool
 
-   Permission is granted to copy and distribute translations of this
-manual into another language, under the above conditions for modified
-versions, except that this permission notice may be stated in a
-translation approved by the Foundation.
+Writing `Makefile' rules for libtool
+====================================
+
+   Libtool is fully integrated with Automake (*note Introduction:
+(automake)Top.), starting with Automake version 1.2.
+
+   If you want to use libtool in a regular `Makefile' (or
+`Makefile.in'), you are on your own.  If you're not using Automake 1.2,
+and you don't know how to incorporate libtool into your package you
+need to do one of the following:
+
+  1. Download Automake (version 1.2 or later) from your nearest GNU
+     mirror, install it, and start using it.
+
+  2. Learn how to write `Makefile' rules by hand.  They're sometimes
+     complex, but if you're clever enough to write rules for compiling
+     your old libraries, then you should be able to figure out new
+     rules for libtool libraries (hint: examine the `Makefile.in' in
+     the `demo' subdirectory of the libtool distribution... note
+     especially that it was automatically generated from the
+     `Makefile.am' by Automake).
 
 
 File: libtool.info,  Node: Using Automake,  Next: Configuring,  Prev: Makefile rules,  Up: Integrating libtool
@@ -119,216 +137,29 @@ script.  `configure' runs a number of tests for system features, then
 generates the `Makefiles' (and possibly a `config.h' header file),
 after which you can run `make' and build the package.
 
-   Libtool has its own equivalent to the `configure' script, `ltconfig'.
+   Libtool adds its own tests to your `configure' script in order to
+generate a libtool script for the installer's host machine.
 
 * Menu:
 
-* Invoking ltconfig::           `ltconfig' command line options.
-* ltconfig example::            Manually configuring a `libtool'.
-* AM_PROG_LIBTOOL::             Configuring `libtool' in `configure.in'.
+* AC_PROG_LIBTOOL::             Configuring `libtool' in `configure.in'.
 
 
-File: libtool.info,  Node: Invoking ltconfig,  Next: ltconfig example,  Up: Configuring
+File: libtool.info,  Node: AC_PROG_LIBTOOL,  Up: Configuring
 
-Invoking `ltconfig'
--------------------
-
-   `ltconfig' runs a series of configuration tests, then creates a
-system-specific `libtool' in the current directory.  The `ltconfig'
-program has the following synopsis:
-
-     ltconfig [OPTION]... LTMAIN [HOST]
-
-and accepts the following options:
-
-`--debug'
-     Dump a trace of shell script execution to standard output.  This
-     produces a lot of output, so you may wish to pipe it to `less' (or
-     `more') or redirect to a file.
-
-`--disable-shared'
-     Create a `libtool' that only builds static libraries.
-
-`--disable-static'
-     Create a `libtool' that builds only shared libraries if they are
-     available.  If only static libraries can be built, then this flag
-     has no effect.
-
-`--disable-fast-install'
-     On platforms in which installable executables, that are created by
-     default, are not suitable for execution in the build directory,
-     create a `libtool' that links executables that search for
-     uninstalled libraries by default, and relinks them at install
-     time.  It is ignored on platforms in which a single executable is
-     enough.
-
-`--enable-dlopen'
-     Test whether some dlopening mechanism is supported.  If this flag
-     is not given, or no working dlopening mechanism is found, create a
-     `libtool' that performs dlpreopening of all dlopened modules.
-
-`--help'
-     Display a help message and exit.
-
-`--no-verify'
-     Do not use `config.sub' to verify that HOST is a valid canonical
-     host system name.
-
-`--output=FILE'
-
-`-o FILE'
-     Instead of creating a libtool script called `libtool', create one
-     called FILE.  This can be useful if you want to create libtool
-     scripts for cross-compilers, or you want to have more than one
-     libtool in the same directory.
-
-`--quiet'
-`--silent'
-     Do not print informational messages when running configuration
-     tests.
-
-`--srcdir=DIR'
-     Look for `config.guess' and `config.sub' in DIR.
-
-`--version'
-     Print `ltconfig' version information and exit.
-
-`--with-gcc'
-     Assume that the GNU C compiler will be used when invoking the
-     created `libtool' to compile and link object files.
-
-`--with-gnu-ld'
-     Assume that the C compiler uses the GNU linker.
-
-`--disable-lock'
-     Create a `libtool' that does not perform locking to ensure proper
-     parallel compilation if the C compiler does not support `-c' and
-     `-o' together.
-
-`--cache-file=FILE'
-     Use this FILE as a cache for results of a few tests.  This is
-     usually `config.cache' used by `configure'.  By default, no cache
-     file is used.
-
-   LTMAIN is the `ltmain.sh' shell script fragment that provides the
-basic libtool functionality (*note Distributing::).
-
-   HOST is the canonical host system name, which by default is guessed
-by running `config.guess'.
-
-   `ltconfig' also recognizes the following environment variables:
-
- - Variable: CC
-     The C compiler that will be used by the generated `libtool'.  If
-     this is not set, `ltconfig' will look for `gcc' or `cc'.
-
- - Variable: CFLAGS
-     Compiler flags used to generate standard object files.  If this is
-     not set, `ltconfig' will not use any such flags.  It affects only
-     the way `ltconfig' runs tests, not the produced `libtool'.
-
- - Variable: CPPFLAGS
-     C preprocessor flags.  If this is not set, `ltconfig' will not use
-     any such flags.  It affects only the way `ltconfig' runs tests, not
-     the produced `libtool'.
-
- - Variable: LD
-     The system linker to use (if the generated `libtool' requires one).
-     If this is not set, `ltconfig' will try to find out what is the
-     linker used by CC.
-
- - Variable: LDFLAGS
-     The flags to be used by `ltconfig' when it links a program.  If
-     this is not set, `ltconfig' will not use any such flags.  It
-     affects only the way `ltconfig' runs tests, not the produced
-     `libtool'.
-
- - Variable: LIBS
-     The libraries to be used by `ltconfig' when it links a program.  If
-     this is not set, `ltconfig' will not use any such flags.  It
-     affects only the way `ltconfig' runs tests, not the produced
-     `libtool'.
-
- - Variable: NM
-     Program to use rather than checking for `nm'.
-
- - Variable: RANLIB
-     Program to use rather than checking for `ranlib'.
-
- - Variable: LN_S
-     A command that creates a link of a program, a soft-link if
-     possible, a hard-link otherwise.
-
- - Variable: DLLTOOL
-     Program to use rather than checking for `dlltool'.  Only meaningful
-     for Cygwin/MS-Windows.
-
- - Variable: OBJDUMP
-     Program to use rather than checking for `objdump'.  Only meaningful
-     for Cygwin/MS-Windows.
-
- - Variable: AS
-     Program to use rather than checking for `as'.  Only meaningful for
-     Cygwin/MS-Windows.
-
-
-File: libtool.info,  Node: ltconfig example,  Next: AM_PROG_LIBTOOL,  Prev: Invoking ltconfig,  Up: Configuring
-
-Using `ltconfig'
-----------------
-
-   Here is a simple example of using `ltconfig' to configure libtool on
-a NetBSD/i386 1.2 system:
-
-     burger$ ./ltconfig ltmain.sh
-     checking host system type... i386-unknown-netbsd1.2
-     checking for ranlib... ranlib
-     checking for gcc... gcc
-     checking whether we are using GNU C... yes
-     checking for gcc option to produce PIC... -fPIC -DPIC
-     checking for gcc option to statically link programs... -static
-     checking if ld is GNU ld... no
-     checking if ld supports shared libraries... yes
-     checking dynamic linker characteristics... netbsd1.2 ld.so
-     checking if libtool supports shared libraries... yes
-     checking whether to build shared libraries... yes
-     creating libtool
-     burger$
-
-   This example shows how to configure `libtool' for cross-compiling to
-a i486 GNU/Hurd 0.1 system (assuming compiler tools reside in
-`/local/i486-gnu/bin'):
-
-     burger$ export PATH=/local/i486-gnu/bin:$PATH
-     burger$ ./ltconfig ltmain.sh i486-gnu0.1
-     checking host system type... i486-unknown-gnu0.1
-     checking for ranlib... ranlib
-     checking for gcc... gcc
-     checking whether we are using GNU C... yes
-     checking for gcc option to produce PIC... -fPIC -DPIC
-     checking for gcc option to statically link programs... -static
-     checking if ld is GNU ld... yes
-     checking if GNU ld supports shared libraries... yes
-     checking dynamic linker characteristics... gnu0.1 ld.so
-     checking if libtool supports shared libraries... yes
-     checking whether to build shared libraries... yes
-     creating libtool
-     burger$
-
-
-File: libtool.info,  Node: AM_PROG_LIBTOOL,  Prev: ltconfig example,  Up: Configuring
-
-The `AM_PROG_LIBTOOL' macro
+The `AC_PROG_LIBTOOL' macro
 ---------------------------
 
    If you are using GNU Autoconf (or Automake), you should add a call to
-`AM_PROG_LIBTOOL' to your `configure.in' file.  This macro offers
-seamless integration between the `configure' script and `ltconfig':
+`AC_PROG_LIBTOOL' to your `configure.in' file.  This macro adds many
+new tests to the `configure' script so that the generated libtool
+script will understand the characteristics of the host:
 
+ - Macro: AC_PROG_LIBTOOL
  - Macro: AM_PROG_LIBTOOL
      Add support for the `--enable-shared' and `--disable-shared'
-     `configure' flags.  Invoke `ltconfig' with the correct arguments
-     to configure the package (*note Invoking ltconfig::).(1)
+     `configure' flags.(1)  `AM_PROG_LIBTOOL' was the old name for this
+     macro, and although supported at the moment is deprecated.
 
      By default, this macro turns on shared libraries if they are
      available, and also enables static libraries if they don't
@@ -339,7 +170,7 @@ seamless integration between the `configure' script and `ltconfig':
           # Turn off shared libraries during beta-testing, since they
           # make the build process take too long.
           AC_DISABLE_SHARED
-          AM_PROG_LIBTOOL
+          AC_PROG_LIBTOOL
 
      The user may specify modified forms of the configure flags
      `--enable-shared' and `--enable-static' to choose whether shared
@@ -365,7 +196,7 @@ seamless integration between the `configure' script and `ltconfig':
      use to automatically update the libtool script if it becomes
      out-of-date.  In order to do that, add to your `configure.in':
 
-          AM_PROG_LIBTOOL
+          AC_PROG_LIBTOOL
           AC_SUBST(LIBTOOL_DEPS)
 
      and, to `Makefile.in' or `Makefile.am':
@@ -383,7 +214,7 @@ seamless integration between the `configure' script and `ltconfig':
      Enable checking for dlopen support. This macro should be used if
      the package makes use of the `-dlopen' and `-dlpreopen' flags,
      otherwise libtool will assume that the system does not support
-     dlopening.  The macro must be called *before* `AM_PROG_LIBTOOL'.
+     dlopening.  The macro must be called *before* `AC_PROG_LIBTOOL'.
 
  - Macro: AC_LIBTOOL_WIN32_DLL
      This macro should be used if the package has been ported to build
@@ -393,34 +224,92 @@ seamless integration between the `configure' script and `ltconfig':
      libtool will assume that the package libraries are not dll clean
      and will build only static libraries on win32 hosts.
 
-     `AM_PROG_LIBTOOL' must be called *after* this macro, and provision
-     must be made to pass `-no-undefined' to `libtool' in link mode
-     from the package `Makefile'.  Naturally, passing `-no-undefined'
-     means that all the library symbols *really are* defined at link
-     time!
+     This macro must be called *before* `AC_PROG_LIBTOOL', and
+     provision must be made to pass `-no-undefined' to `libtool' in
+     link mode from the package `Makefile'.  Naturally, if you pass
+     `-no-undefined', you must ensure that all the library symbols
+     *really are* defined at link time!
 
  - Macro: AC_DISABLE_FAST_INSTALL
-     Change the default behaviour for `AM_PROG_LIBTOOL' to disable
+     Change the default behaviour for `AC_PROG_LIBTOOL' to disable
      optimization for fast installation.  The user may still override
      this default, depending on platform support, by specifying
      `--enable-fast-install'.
 
  - Macro: AC_DISABLE_SHARED
  - Macro: AM_DISABLE_SHARED
-     Change the default behaviour for `AM_PROG_LIBTOOL' to disable
+     Change the default behaviour for `AC_PROG_LIBTOOL' to disable
      shared libraries.  The user may still override this default by
      specifying `--enable-shared'.
 
  - Macro: AC_DISABLE_STATIC
  - Macro: AM_DISABLE_STATIC
-     Change the default behaviour for `AM_PROG_LIBTOOL' to disable
+     Change the default behaviour for `AC_PROG_LIBTOOL' to disable
      static libraries.  The user may still override this default by
      specifying `--enable-static'.
 
+   The tests in `AC_PROG_LIBTOOL' also recognize the following
+environment variables:
+
+ - Variable: CC
+     The C compiler that will be used by the generated `libtool'.  If
+     this is not set, `AC_PROG_LIBTOOL' will look for `gcc' or `cc'.
+
+ - Variable: CFLAGS
+     Compiler flags used to generate standard object files.  If this is
+     not set, `AC_PROG_LIBTOOL' will not use any such flags.  It affects
+     only the way `AC_PROG_LIBTOOL' runs tests, not the produced
+     `libtool'.
+
+ - Variable: CPPFLAGS
+     C preprocessor flags.  If this is not set, `AC_PROG_LIBTOOL' will
+     not use any such flags.  It affects only the way `AC_PROG_LIBTOOL'
+     runs tests, not the produced `libtool'.
+
+ - Variable: LD
+     The system linker to use (if the generated `libtool' requires one).
+     If this is not set, `AC_PROG_LIBTOOL' will try to find out what is
+     the linker used by CC.
+
+ - Variable: LDFLAGS
+     The flags to be used by `libtool' when it links a program.  If
+     this is not set, `AC_PROG_LIBTOOL' will not use any such flags.  It
+     affects only the way `AC_PROG_LIBTOOL' runs tests, not the produced
+     `libtool'.
+
+ - Variable: LIBS
+     The libraries to be used by `AC_PROG_LIBTOOL' when it links a
+     program.  If this is not set, `AC_PROG_LIBTOOL' will not use any
+     such flags.  It affects only the way `AC_PROG_LIBTOOL' runs tests,
+     not the produced `libtool'.
+
+ - Variable: NM
+     Program to use rather than checking for `nm'.
+
+ - Variable: RANLIB
+     Program to use rather than checking for `ranlib'.
+
+ - Variable: LN_S
+     A command that creates a link of a program, a soft-link if
+     possible, a hard-link otherwise.  `AC_PROG_LIBTOOL' will check for
+     a suitable program if this variable is not set.
+
+ - Variable: DLLTOOL
+     Program to use rather than checking for `dlltool'.  Only meaningful
+     for Cygwin/MS-Windows.
+
+ - Variable: OBJDUMP
+     Program to use rather than checking for `objdump'.  Only meaningful
+     for Cygwin/MS-Windows.
+
+ - Variable: AS
+     Program to use rather than checking for `as'.  Only used on
+     Cygwin/MS-Windows at the moment.
+
    When you invoke the `libtoolize' program (*note Invoking
 libtoolize::), it will tell you where to find a definition of
-`AM_PROG_LIBTOOL'.  If you use Automake, the `aclocal' program will
-automatically add `AM_PROG_LIBTOOL' support to your `configure' script.
+`AC_PROG_LIBTOOL'.  If you use Automake, the `aclocal' program will
+automatically add `AC_PROG_LIBTOOL' support to your `configure' script.
 
    Nevertheless, it is advisable to include a copy of `libtool.m4' in
 `acinclude.m4', so that, even if `aclocal.m4' and `configure' are
@@ -431,7 +320,7 @@ weird errors when versions don't match.
 
    ---------- Footnotes ----------
 
-   (1) `AM_PROG_LIBTOOL' requires that you define the `Makefile'
+   (1) `AC_PROG_LIBTOOL' requires that you define the `Makefile'
 variable `top_builddir' in your `Makefile.in'.  Automake does this
 automatically, but Autoconf users should set it to the relative path to
 the top of your build directory (`../..', for example).
@@ -450,9 +339,6 @@ your package:
 
 `config.sub'
      Canonical system name validation subroutine script.
-
-`ltconfig'
-     Generate a libtool script for a given system.
 
 `ltmain.sh'
      A generic script implementing basic libtool functionality.
@@ -488,7 +374,7 @@ and accepts the following options:
      Work silently, and assume that Automake libtool support is used.
 
      `libtoolize --automake' is used by Automake to add libtool files to
-     your package, when `AM_PROG_LIBTOOL' appears in your
+     your package, when `AC_PROG_LIBTOOL' appears in your
      `configure.in'.
 
 `--copy'
@@ -524,7 +410,7 @@ and accepts the following options:
      Print `libtoolize' version information and exit.
 
    If `libtoolize' detects an explicit call to `AC_CONFIG_AUX_DIR'
-(*note The Autoconf Manual: (autoconf)Input) in your `configure.in', it
+(*note The Autoconf Manual: (autoconf)Input.) in your `configure.in', it
 will put the files in the specified directory.
 
    `libtoolize' displays hints for adding libtool support to your
@@ -544,22 +430,21 @@ it is necessary to use corresponding names for libtool objects.
 
  - Variable: LTALLOCA
      Substituted by `AC_FUNC_ALLOCA' (*note Particular Function Checks:
-     (autoconf)Particular Functions).  Is either empty, or contains
+     (autoconf)Particular Functions.).  Is either empty, or contains
      `alloca.lo'.
 
  - Variable: LTLIBOBJS
      Substituted by `AC_REPLACE_FUNCS' (*note Generic Function Checks:
-     (autoconf)Generic Functions), and a few other functions.
+     (autoconf)Generic Functions.), and a few other functions.
 
-   Unfortunately, the most recent version of Autoconf (2.12, at the
-time of this writing) does not have any way for libtool to provide
-support for these variables.  So, if you depend on them, use the
-following code immediately before the call to `AC_OUTPUT' in your
-`configure.in':
+   Unfortunately, the stable release of Autoconf (2.13, at the time of
+this writing) does not have any way for libtool to provide support for
+these variables.  So, if you depend on them, use the following code
+immediately before the call to `AC_OUTPUT' in your `configure.in':
 
-     LTLIBOBJS=`echo "$LIBOBJS" | sed 's/\.o/.lo/g'`
+     LTLIBOBJS=`echo "$LIBOBJS" | sed 's/\.[^.]* /.lo /g;s/\.[^.]*$/.lo/'`
      AC_SUBST(LTLIBOBJS)
-     LTALLOCA=`echo "$ALLOCA" | sed 's/\.o/.lo/g'`
+     LTALLOCA=`echo "$ALLOCA" | sed 's/\.[^.]* /.lo /g;s/\.[^.]*$/.lo/'`
      AC_SUBST(LTALLOCA)
      AC_OUTPUT(...)
 
@@ -571,8 +456,8 @@ Static-only libraries
 
    When you are developing a package, it is often worthwhile to
 configure your package with the `--disable-shared' flag, or to override
-the defaults for `AM_PROG_LIBTOOL' by using the `AM_DISABLE_SHARED'
-Autoconf macro (*note The `AM_PROG_LIBTOOL' macro: AM_PROG_LIBTOOL).
+the defaults for `AC_PROG_LIBTOOL' by using the `AC_DISABLE_SHARED'
+Autoconf macro (*note The `AC_PROG_LIBTOOL' macro: AC_PROG_LIBTOOL.).
 This prevents libtool from building shared libraries, which has several
 advantages:
 
@@ -888,52 +773,60 @@ installed in a system directory.
 
    Here are the relevant portions of that file:
 
-     /* __BEGIN_DECLS should be used at the beginning of your declarations,
-        so that C++ compilers don't mangle their names.  Use __END_DECLS at
+     /* BEGIN_C_DECLS should be used at the beginning of your declarations,
+        so that C++ compilers don't mangle their names.  Use END_C_DECLS at
         the end of C declarations. */
-     #undef __BEGIN_DECLS
-     #undef __END_DECLS
+     #undef BEGIN_C_DECLS
+     #undef END_C_DECLS
      #ifdef __cplusplus
-     # define __BEGIN_DECLS extern "C" {
-     # define __END_DECLS }
+     # define BEGIN_C_DECLS extern "C" {
+     # define END_C_DECLS }
      #else
-     # define __BEGIN_DECLS /* empty */
-     # define __END_DECLS /* empty */
+     # define BEGIN_C_DECLS /* empty */
+     # define END_C_DECLS /* empty */
      #endif
      
-     /* __P is a macro used to wrap function prototypes, so that compilers
-        that don't understand ANSI C prototypes still work, and ANSI C
-        compilers can issue warnings about type mismatches. */
-     #undef __P
+     /* PARAMS is a macro used to wrap function prototypes, so that
+        compilers that don't understand ANSI C prototypes still work,
+        and ANSI C compilers can issue warnings about type mismatches. */
+     #undef PARAMS
      #if defined (__STDC__) || defined (_AIX) \
              || (defined (__mips) && defined (_SYSTYPE_SVR4)) \
              || defined(WIN32) || defined(__cplusplus)
-     # define __P(protos) protos
+     # define PARAMS(protos) protos
      #else
-     # define __P(protos) ()
+     # define PARAMS(protos) ()
      #endif
 
    These macros are used in `foo.h' as follows:
 
-     #ifndef _FOO_H_
-     #define _FOO_H_ 1
+     #ifndef FOO_H
+     #define FOO_H 1
      
      /* The above macro definitions. */
-     ...
+     #include "..."
      
-     __BEGIN_DECLS
-     int foo __P((void));
-     int hello __P((void));
-     __END_DECLS
+     BEGIN_C_DECLS
      
-     #endif /* !_FOO_H_ */
+     int foo PARAMS((void));
+     int hello PARAMS((void));
+     
+     END_C_DECLS
+     
+     #endif /* !FOO_H */
 
-   Note that the `#ifndef _FOO_H_' prevents the body of `foo.h' from
+   Note that the `#ifndef FOO_H' prevents the body of `foo.h' from
 being read more than once in a given compilation.
 
-   Feel free to copy the definitions of `__P', `__BEGIN_DECLS', and
-`__END_DECLS' into your own headers.  Then, you may use them to create
-header files that are valid for C++, ANSI, and non-ANSI compilers.
+   Also the only thing that must go outside the
+`BEGIN_C_DECLS'/`END_C_DECLS' pair are `#include' lines.  Strictly
+speaking it is only C symbol names that need to be protected, but your
+header files will be more maintainable if you have a single pair of of
+these macros around the majority of the header contents.
+
+   You should use these definitions of `PARAMS', `BEGIN_C_DECLS', and
+`END_C_DECLS' into your own headers.  Then, you may use them to create
+header files that are valid for C++, ANSI, and non-ANSI compilers(1).
 
    Do not be naive about writing portable code.  Following the tips
 given above will help you miss the most obvious problems, but there are
@@ -943,10 +836,16 @@ some of the following issues:
    * Pre-ANSI compilers do not always support the `void *' generic
      pointer type, and so need to use `char *' in its place.
 
-   * The `const' and `signed' keywords are not supported by some
-     compilers, especially pre-ANSI compilers.
+   * The `const', `inline' and `signed' keywords are not supported by
+     some compilers, especially pre-ANSI compilers.
 
    * The `long double' type is not supported by many compilers.
+
+   ---------- Footnotes ----------
+
+   (1) We used to recommend `__P', `__BEGIN_DECLS' and `__END_DECLS'.
+This was bad advice since symbols (even preprocessor macro names) that
+begin with an underscore are reserved for the use of the compiler.
 
 
 File: libtool.info,  Node: Inter-library dependencies,  Next: Dlopened modules,  Prev: Library tips,  Up: Top
@@ -975,7 +874,7 @@ shared libraries.
    In any event, libtool provides a simple mechanism for you to declare
 inter-library dependencies: for every library `libNAME' that your own
 library depends on, simply add a corresponding `-lNAME' option to the
-link line when you create your library.(1)  To make an example of our
+link line when you create your library.  To make an example of our
 `libhello' that depends on `libm':
 
      burger$ libtool gcc -g -O -o libhello.la foo.lo hello.lo \
@@ -1004,12 +903,6 @@ libtool supports.  The default, conservative behavior is to avoid
 linking one library with another, introducing their inter-dependencies
 only when a program is linked with them.
 
-   ---------- Footnotes ----------
-
-   (1) Unfortunately, as of libtool version 1.3.5, there is no way to
-specify inter-library dependencies on libtool libraries that have not
-yet been installed.  Libtool 1.4 will support this feature.
-
 
 File: libtool.info,  Node: Dlopened modules,  Next: Using libltdl,  Prev: Inter-library dependencies,  Up: Top
 
@@ -1036,10 +929,10 @@ interpreted language.  In fact, dlopen calls are frequently used in
 language interpreters to provide an efficient way to extend the
 language.
 
-   As of version 1.3.5, libtool provides support for dlopened modules.
+   As of version 1.4.2, libtool provides support for dlopened modules.
 However, you should indicate that your package is willing to use such
 support, by using the macro `AC_LIBTOOL_DLOPEN' in `configure.in'.  If
-this macro is not used (or it is used _after_ `AM_PROG_LIBTOOL'),
+this macro is not used (or it is used _after_ `AC_PROG_LIBTOOL'),
 libtool will assume no dlopening mechanism is available, and will try
 to simulate it.
 
@@ -1096,7 +989,7 @@ Dlpreopening
 
    Libtool provides special support for dlopening libtool object and
 libtool library files, so that their symbols can be resolved _even on
-platforms without any `dlopen' and `dlsym' functions._.
+platforms without any `dlopen' and `dlsym' functions_.
 
    Consider the following alternative ways of loading code into your
 program, in order of increasing "laziness":
@@ -1128,8 +1021,7 @@ represent the program's symbol table.
 your application to dlopen by using the `-dlopen' or `-dlpreopen' flags
 when you link your program (*note Link mode::).
 
- - Structure: struct lt_dlsymlist { const char *NAME; lt_ptr_t ADDRESS;
-          }
+ - Structure: struct lt_dlsymlist { const char *NAME; lt_ptr ADDRESS; }
      The NAME attribute is a null-terminated character string of the
      symbol name, such as `"fprintf"'.  The ADDRESS attribute is a
      generic pointer to the appropriate object, such as `&fprintf'.
@@ -1237,15 +1129,17 @@ libltdl supports currently the following dynamic linking mechanisms:
 libltdl is licensed under the terms of the GNU Library General Public
 License, with the following exception:
 
-     As a special exception to the GNU Library General Public License,
-     if you distribute this file as part of a program that uses GNU
-     libtool to create libraries and programs, you may include it under
-     the same distribution terms that you use for the rest of that
-     program.
+     As a special exception to the GNU Lesser General Public License,
+     if you distribute this file as part of a program or library that
+     is built using GNU libtool, you may include it under the same
+     distribution terms that you use for the rest of that program.
 
 * Menu:
 
 * Libltdl interface::           How to use libltdl in your programs.
 * Modules for libltdl::         Creating modules that can be `dlopen'ed.
+* Thread Saftey in libltdl::	Registering callbacks for multi-thread safety.
+* User defined module data::    Associating data with loaded modules.
+* Module loaders for libltdl::  Creating user defined module loaders.
 * Distributing libltdl::        How to distribute libltdl with your package.
 

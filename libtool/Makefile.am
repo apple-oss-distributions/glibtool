@@ -6,20 +6,20 @@ BUILD_SUBDIRS = . libltdl doc tests
 SUBDIRS = $(BUILD_SUBDIRS)
 DIST_SUBDIRS = $(BUILD_SUBDIRS) $(CONF_SUBDIRS)
 
-# We need to export these variables when we run ltconfig.
+# We need to export these variables
 CFLAGS = @CFLAGS@
 CPPLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS= @LIBS@
 
-aclocal_macros = libtool.m4
+aclocal_macros = libtool.m4 ltdl.m4
 
-EXTRA_DIST = $(aclocal_macros) libtoolize.in ltconfig.in ltmain.in \
+EXTRA_DIST = $(aclocal_macros) bootstrap libtoolize.in ltmain.in \
 	mkstamp ChangeLog.0
-CLEANFILES = libtool libtoolize ltconfig.T ltmain.shT
+CLEANFILES = libtool libtoolize ltmain.shT
 
 # These are required by libtoolize.
-pkgdata_SCRIPTS = config.guess config.sub ltconfig
+pkgdata_SCRIPTS = config.guess config.sub
 pkgdata_DATA = ltmain.sh
 
 # This macro file should be visible to Automake's aclocal.
@@ -28,26 +28,21 @@ aclocal_DATA = $(aclocal_macros)
 # The standalone libtool script, and the libtool distributor.
 bin_SCRIPTS = libtool libtoolize
 
-libtool: $(srcdir)/ltmain.sh $(srcdir)/ltconfig
-	CC="$(CC)" CFLAGS="$(CFLAGS)" CPPFLAGS="$(CPPFLAGS)" \
-	LD="$(LD)" LDFLAGS="$(LDFLAGS)" LIBS="$(LIBS)" \
-	LN_S="$(LN_S)" NM="$(NM)" RANLIB="$(RANLIB)" \
-	DLLTOOL="$(DLLTOOL)" OBJDUMP="$(OBJDUMP)" AS="$(AS)" \
-	$(SHELL) $(srcdir)/ltconfig $(LIBTOOL_FLAGS) --srcdir=$(srcdir) \
-	  --output=$@ $(srcdir)/ltmain.sh
-
-# Experimental C version of libtool.
-clibtool: $(srcdir)/ltmain.c $(srcdir)/ltconfig
-	CC="$(CC)" CFLAGS="$(CFLAGS)" CPPFLAGS="$(CPPFLAGS)" \
-	LD="$(LD)" LDFLAGS="$(LDFLAGS)" LIBS="$(LIBS)" \
-	LN_S="$(LN_S)" NM="$(NM)" RANLIB="$(RANLIB)" \
-	DLLTOOL="$(DLLTOOL)" OBJDUMP="$(OBJDUMP)" AS="$(AS)" \
-	$(SHELL) $(srcdir)/ltconfig $(LIBTOOL_FLAGS) --srcdir=$(srcdir) \
-	  --output=$@ $(srcdir)/ltmain.c
+libtool: $(srcdir)/ltmain.sh $(top_builddir)/configure.in
+	$(SHELL) $(top_builddir)/config.status --recheck
+	chmod +x $@
 
 libtoolize: $(srcdir)/libtoolize.in $(top_builddir)/config.status
-	CONFIG_FILES=libtoolize CONFIG_HEADERS= $(top_builddir)/config.status
-	chmod +x libtoolize
+	CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) $(top_builddir)/config.status
+	chmod +x $@
+
+$(srcdir)/ltmain.sh: $(srcdir)/ltmain.in $(TSDEPS)
+	-rm -f ltmain.shT
+	date=`$(SHELL) $(srcdir)/mkstamp < $(srcdir)/ChangeLog` && \
+	sed -e 's/@''PACKAGE@/@PACKAGE@/' -e 's/@''VERSION@/@VERSION@/' \
+	    -e "s%@""TIMESTAMP@%$$date%" $(srcdir)/ltmain.in > ltmain.shT
+	mv -f ltmain.shT $@ || \
+	(rm -f $@ && cp ltmain.shT $@ && rm -f ltmain.shT)
 
 # TSDEPS will be defined to TSDEPS_DIST at `make dist' time
 TSDEPS =
@@ -60,36 +55,19 @@ update-timestamps:
 	@if (cd $(srcdir) && test -d CVS && \
 	    $(CVS) -n update $(TSDEPS_DIST) | grep '^M'); then \
 		echo "Cannot make dist before commit"; exit 1; else :; fi
-	$(MAKE) TSDEPS="$(TSDEPS_DIST)" $(srcdir)/ltconfig $(srcdir)/ltmain.sh
-
-# Do line number substitution, as well as PACKAGE, VERSION and TIMESTAMP.
-# Line numbering transliterated from a section in autoconf (Autoconf 2.12).
-@srcdir@/ltconfig: $(srcdir)/ltconfig.in $(top_srcdir)/configure.in $(TSDEPS)
-	rm -f ltconfig.T
-	date=`$(SHELL) $(srcdir)/mkstamp < $(srcdir)/ChangeLog` && \
-	$(AWK) '/@LINENO@/ { printf "%d:", NR } { print }' $(srcdir)/ltconfig.in | \
-	  sed -e 's/@''PACKAGE@/@PACKAGE@/' -e 's/@''VERSION@/@VERSION@/' \
-	      -e "s%@""TIMESTAMP@%$$date%" \
-	      -e '/@LINENO@/s/^\([0-9][0-9]*\):\(.*\)@LINENO@/\2\1/' \
-		> ltconfig.T
-	chmod +x ltconfig.T
-	mv -f ltconfig.T $@ || \
-	(rm -f $@ && cp ltconfig.T $@ && rm -f ltconfig.T)
-
-@srcdir@/ltmain.sh: $(srcdir)/ltmain.in $(top_srcdir)/configure.in $(TSDEPS)
-	rm -f ltmain.shT
-	date=`$(SHELL) $(srcdir)/mkstamp < $(srcdir)/ChangeLog` && \
-	sed -e 's/@''PACKAGE@/@PACKAGE@/' -e 's/@''VERSION@/@VERSION@/' \
-	    -e "s%@""TIMESTAMP@%$$date%" $(srcdir)/ltmain.in > ltmain.shT
-	mv -f ltmain.shT $@ || \
-	(rm -f $@ && cp ltmain.shT $@ && rm -f ltmain.shT)
 
 # All our rules should depend on these demo files.
-all-recursive: $(ACINCLUDE_M4_LIST)
+all-recursive: $(srcdir)/libltdl/acinclude.m4 $(ACINCLUDE_M4_LIST)
+
+@srcdir@/libltdl/acinclude.m4: $(srcdir)/libtool.m4 $(srcdir)/ltdl.m4
+	-rm -f $@ $@T
+	cat $(srcdir)/libtool.m4 $(srcdir)/ltdl.m4 > $@T
+	mv $@T $@
 
 @ACINCLUDE_M4_LIST@: $(srcdir)/libtool.m4
-	rm -f $@
-	cp $(srcdir)/libtool.m4 $@
+	-rm -f $@ $@T
+	cat $(srcdir)/libtool.m4 > $@T
+	mv $@T $@
 
 .PHONY: configure-subdirs
 configure-subdirs distdir: $(DIST_MAKEFILE_LIST)

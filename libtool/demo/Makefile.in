@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p5a from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -59,20 +59,30 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 host_alias = @host_alias@
 host_triplet = @host@
+AMTAR = @AMTAR@
 AS = @AS@
+AWK = @AWK@
 CC = @CC@
+DEPDIR = @DEPDIR@
 DLLTOOL = @DLLTOOL@
+ECHO = @ECHO@
 EXEEXT = @EXEEXT@
+INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LIBM = @LIBM@
 LIBTOOL = @LIBTOOL@
 LIBTOOL_DEPS = @LIBTOOL_DEPS@
 LN_S = @LN_S@
 MAKEINFO = @MAKEINFO@
 OBJDUMP = @OBJDUMP@
+OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
 STATIC = @STATIC@
+STRIP = @STRIP@
 VERSION = @VERSION@
+am__include = @am__include@
+am__quote = @am__quote@
+install_sh = @install_sh@
 
 AUTOMAKE_OPTIONS = no-dependencies foreign
 
@@ -122,7 +132,7 @@ objdir = `sed -n -e 's/^objdir=\(.*\)$$/\1/p' ../libtool`
 # If this one passes with pass_all, it is likely that pass_all works
 EXTRA_LIBRARIES = libhell0.a
 libhell0_a_SOURCES = hello.c foo.c
-EXTRA_LTLIBRARIES =  libhell1.la libhell2.la
+EXTRA_LTLIBRARIES = libhell1.la libhell2.la
 libhell1_la_SOURCES = hell1.c
 libhell1_la_LIBADD = -L. -lhell0
 libhell1_la_LDFLAGS = -rpath $(libdir)
@@ -131,7 +141,7 @@ libhell2_la_SOURCES = hell2.c
 libhell2_la_LIBADD = -L. -lhell0
 libhell2_la_LDFLAGS = -rpath $(libdir)
 libhell2_la_DEPENDENCIES = libhell0.a
-EXTRA_PROGRAMS =  hell0
+EXTRA_PROGRAMS = hell0
 hell0_SOURCES = main.c
 hell0_LDADD = libhell1.la libhell2.la $(LIBM)
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -143,7 +153,7 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 libhell0_a_LIBADD = 
-libhell0_a_OBJECTS =  hello.o foo.o
+libhell0_a_OBJECTS =  hello.$(OBJEXT) foo.$(OBJEXT)
 AR = ar
 LTLIBRARIES =  $(lib_LTLIBRARIES)
 
@@ -156,15 +166,15 @@ libhello_la_OBJECTS =  hello.lo foo.lo
 @BINARY_HELLDL_FALSE@bin_PROGRAMS =  hell$(EXEEXT) hell.static
 PROGRAMS =  $(bin_PROGRAMS)
 
-hell0_OBJECTS =  main.o
+hell0_OBJECTS =  main.$(OBJEXT)
 hell0_DEPENDENCIES =  libhell1.la libhell2.la
 hell0_LDFLAGS = 
-hell_OBJECTS =  main.o
+hell_OBJECTS =  main.$(OBJEXT)
 hell_DEPENDENCIES =  libhello.la
 hell_LDFLAGS = 
-hell_static_OBJECTS =  main.o
+hell_static_OBJECTS =  main.$(OBJEXT)
 hell_static_DEPENDENCIES =  libhello.la
-@BINARY_HELLDL_TRUE@helldl_OBJECTS =  dlmain.o
+@BINARY_HELLDL_TRUE@helldl_OBJECTS =  dlmain.$(OBJEXT)
 helldl_LDADD = $(LDADD)
 SCRIPTS =  $(bin_SCRIPTS)
 
@@ -181,14 +191,14 @@ configure configure.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 SOURCES = $(libhell0_a_SOURCES) $(libhell1_la_SOURCES) $(libhell2_la_SOURCES) $(libhello_la_SOURCES) $(hell0_SOURCES) $(hell_SOURCES) $(hell_static_SOURCES) $(helldl_SOURCES)
 OBJECTS = $(libhell0_a_OBJECTS) $(libhell1_la_OBJECTS) $(libhell2_la_OBJECTS) $(libhello_la_OBJECTS) $(hell0_OBJECTS) $(hell_OBJECTS) $(hell_static_OBJECTS) $(helldl_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
-.SUFFIXES: .S .c .lo .o .s
+.SUFFIXES: .S .c .lo .o .obj .s
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
 	cd $(top_srcdir) && $(AUTOMAKE) --foreign Makefile
 
@@ -207,6 +217,11 @@ $(srcdir)/configure: $(srcdir)/configure.in $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCI
 .c.o:
 	$(COMPILE) -c $<
 
+# FIXME: We should only use cygpath when building on Windows,
+# and only if it is available.
+.c.obj:
+	$(COMPILE) -c `cygpath -w $<`
+
 .s.o:
 	$(COMPILE) -c $<
 
@@ -215,6 +230,7 @@ $(srcdir)/configure: $(srcdir)/configure.in $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCI
 
 mostlyclean-compile:
 	-rm -f *.o core *.core
+	-rm -f *.$(OBJEXT)
 
 clean-compile:
 
@@ -520,7 +536,7 @@ mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 # create a script that says that -dlopen is not supported
-@BINARY_HELLDL_FALSE@helldl:
+@BINARY_HELLDL_FALSE@helldl helldl$(EXEEXT):
 @BINARY_HELLDL_FALSE@	rm -f $@
 @BINARY_HELLDL_FALSE@	echo '#! /bin/sh' > $@
 @BINARY_HELLDL_FALSE@	echo '-dlopen is unsupported' >> $@

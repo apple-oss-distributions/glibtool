@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p5a from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -60,39 +60,48 @@ POST_UNINSTALL = :
 host_alias = @host_alias@
 host_triplet = @host@
 ACINCLUDE_M4_LIST = @ACINCLUDE_M4_LIST@
+AMTAR = @AMTAR@
 AS = @AS@
 AWK = @AWK@
 CC = @CC@
 CONF_SUBDIRS = @CONF_SUBDIRS@
+DEPDIR = @DEPDIR@
 DIST_MAKEFILE_LIST = @DIST_MAKEFILE_LIST@
 DLLTOOL = @DLLTOOL@
-FILE = @FILE@
+ECHO = @ECHO@
+EXEEXT = @EXEEXT@
+INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LD = @LD@
 LIBTOOL = @LIBTOOL@
-LIBTOOL_FLAGS = @LIBTOOL_FLAGS@
 LN_S = @LN_S@
 MAKEINFO = @MAKEINFO@
 NM = @NM@
 OBJDUMP = @OBJDUMP@
+OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
+STRIP = @STRIP@
+TIMESTAMP = @TIMESTAMP@
 VERSION = @VERSION@
 aclocaldir = @aclocaldir@
+am__include = @am__include@
+am__quote = @am__quote@
+install_sh = @install_sh@
 pkgdatadir = @pkgdatadir@
 
 AUTOMAKE_OPTIONS = gnits
 
-TESTS = cdemo-static.test cdemo-make.test cdemo-exec.test 	demo-static.test demo-make.test demo-exec.test 	demo-inst.test demo-unst.test 	mdemo-static.test mdemo-make.test mdemo-exec.test 	mdemo-inst.test mdemo-unst.test 	cdemo-conf.test cdemo-make.test cdemo-exec.test 	demo-conf.test demo-make.test demo-exec.test 	demo-inst.test demo-unst.test deplibs.test 	mdemo-conf.test mdemo-make.test mdemo-exec.test 	mdemo-inst.test mdemo-unst.test dryrun.test 	demo-nofast.test demo-make.test demo-exec.test 	demo-inst.test demo-unst.test 	cdemo-shared.test cdemo-make.test cdemo-exec.test 	demo-shared.test demo-make.test demo-exec.test demo-inst.test 	hardcode.test build-relink.test noinst-link.test demo-unst.test 	mdemo-shared.test mdemo-make.test mdemo-exec.test 	mdemo-inst.test mdemo-unst.test 	assign.test link.test link-2.test nomode.test 	quote.test sh.test suffix.test
+TESTS = cdemo-static.test cdemo-make.test cdemo-exec.test 	demo-static.test demo-make.test demo-exec.test 	demo-inst.test demo-unst.test 	depdemo-static.test depdemo-make.test 	depdemo-exec.test depdemo-inst.test depdemo-unst.test 	mdemo-static.test mdemo-make.test mdemo-exec.test 	mdemo-inst.test mdemo-unst.test 	cdemo-conf.test cdemo-make.test cdemo-exec.test 	demo-conf.test demo-make.test demo-exec.test 	demo-inst.test demo-unst.test deplibs.test 	depdemo-conf.test depdemo-make.test 	depdemo-exec.test depdemo-inst.test depdemo-unst.test 	mdemo-conf.test mdemo-make.test mdemo-exec.test 	mdemo-inst.test mdemo-unst.test dryrun.test 	demo-nofast.test demo-make.test demo-exec.test 	demo-inst.test demo-unst.test 	demo-pic.test demo-make.test demo-exec.test 	demo-nopic.test demo-make.test demo-exec.test 	depdemo-nofast.test depdemo-make.test 	depdemo-exec.test depdemo-inst.test depdemo-unst.test 	cdemo-shared.test cdemo-make.test cdemo-exec.test 	demo-shared.test demo-make.test demo-exec.test demo-inst.test 	hardcode.test build-relink.test noinst-link.test demo-unst.test 	depdemo-shared.test depdemo-make.test 	depdemo-exec.test depdemo-inst.test build-relink2.test 	depdemo-unst.test 	mdemo-shared.test mdemo-make.test mdemo-exec.test 	mdemo-inst.test mdemo-unst.test 	assign.test link.test link-2.test nomode.test 	quote.test sh.test suffix.test
 
 
-# We should export these variables when we run ltconfig.
+# We should export these variables when we build the libtool script.
 CFLAGS = @CFLAGS@
-CPPLAGS = @CPPFLAGS@
+CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 
 # Be sure to reexport important environment variables.
-TESTS_ENVIRONMENT = CC="$(CC)" CFLAGS="$(CFLAGS)" CPPFLAGS="$(CPPFLAGS)" 	LD="$(LD)" LDFLAGS="$(LDFLAGS)" LIBS="$(LIBS)" 	LN_S="$(LN_S)" NM="$(NM)" RANLIB="$(RANLIB)"
+TESTS_ENVIRONMENT = MAKE="$(MAKE)" CC="$(CC)" CFLAGS="$(CFLAGS)" 	CPPFLAGS="$(CPPFLAGS)" LD="$(LD)" LDFLAGS="$(LDFLAGS)" 	LIBS="$(LIBS)" LN_S="$(LN_S)" NM="$(NM)" RANLIB="$(RANLIB)" 	OBJEXT="$(OBJEXT)" EXEEXT="$(EXEEXT)"
 
 
 EXTRA_DIST = defs $(TESTS)
@@ -103,7 +112,7 @@ DIST_COMMON =  Makefile.am Makefile.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:
@@ -203,6 +212,7 @@ clean-am:  clean-generic mostlyclean-am clean-local
 clean: clean-am
 
 distclean-am:  distclean-generic clean-am
+	-rm -f libtool
 
 distclean: distclean-am
 
@@ -220,7 +230,7 @@ distclean-generic clean-generic maintainer-clean-generic clean \
 mostlyclean distclean maintainer-clean
 
 
-cdemo-static.test: $(top_builddir)/libtool
+demo-conf.test: $(top_builddir)/libtool
 
 $(top_builddir)/libtool:
 	cd $(top_builddir) && $(MAKE) all
@@ -229,6 +239,7 @@ $(top_builddir)/libtool:
 clean-local:
 	-test -f ../cdemo/Makefile && cd ../cdemo && $(MAKE) distclean
 	-test -f ../demo/Makefile && cd ../demo && $(MAKE) distclean
+	-test -f ../depdemo/Makefile && cd ../depdemo && $(MAKE) distclean
 	-test -f ../mdemo/Makefile && cd ../mdemo && $(MAKE) distclean
 	rm -rf _inst
 

@@ -1,7 +1,7 @@
 Package: libtool
-Maintainer: Wilfredo Sanchez <wsanchez@apple.com>
+Maintainer: Wilfredo Sanchez <wsanchez@opensource.apple.com>
 Vendor: GNU Project
-Version: 1.3.5
+Version: 1.4.2
 URL: ftp://ftp.gnu.org/pub/gnu/libtool
 Build-Depends: build-base
 Description: Shared library build tool

@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p5a from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -60,24 +60,33 @@ POST_UNINSTALL = :
 host_alias = @host_alias@
 host_triplet = @host@
 ACINCLUDE_M4_LIST = @ACINCLUDE_M4_LIST@
+AMTAR = @AMTAR@
 AS = @AS@
 AWK = @AWK@
 CC = @CC@
 CONF_SUBDIRS = @CONF_SUBDIRS@
+DEPDIR = @DEPDIR@
 DIST_MAKEFILE_LIST = @DIST_MAKEFILE_LIST@
 DLLTOOL = @DLLTOOL@
-FILE = @FILE@
+ECHO = @ECHO@
+EXEEXT = @EXEEXT@
+INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LD = @LD@
 LIBTOOL = @LIBTOOL@
-LIBTOOL_FLAGS = @LIBTOOL_FLAGS@
 LN_S = @LN_S@
 MAKEINFO = @MAKEINFO@
 NM = @NM@
 OBJDUMP = @OBJDUMP@
+OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
+STRIP = @STRIP@
+TIMESTAMP = @TIMESTAMP@
 VERSION = @VERSION@
 aclocaldir = @aclocaldir@
+am__include = @am__include@
+am__quote = @am__quote@
+install_sh = @install_sh@
 pkgdatadir = @pkgdatadir@
 
 AUTOMAKE_OPTIONS = 1.3e gnu
@@ -86,20 +95,20 @@ BUILD_SUBDIRS = . libltdl doc tests
 SUBDIRS = $(BUILD_SUBDIRS)
 DIST_SUBDIRS = $(BUILD_SUBDIRS) $(CONF_SUBDIRS)
 
-# We need to export these variables when we run ltconfig.
+# We need to export these variables
 CFLAGS = @CFLAGS@
 CPPLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 
-aclocal_macros = libtool.m4
+aclocal_macros = libtool.m4 ltdl.m4
 
-EXTRA_DIST = $(aclocal_macros) libtoolize.in ltconfig.in ltmain.in 	mkstamp ChangeLog.0
+EXTRA_DIST = $(aclocal_macros) bootstrap libtoolize.in ltmain.in 	mkstamp ChangeLog.0
 
-CLEANFILES = libtool libtoolize ltconfig.T ltmain.shT
+CLEANFILES = libtool libtoolize ltmain.shT
 
 # These are required by libtoolize.
-pkgdata_SCRIPTS = config.guess config.sub ltconfig
+pkgdata_SCRIPTS = config.guess config.sub
 pkgdata_DATA = ltmain.sh
 
 # This macro file should be visible to Automake's aclocal.
@@ -121,13 +130,13 @@ DATA =  $(aclocal_DATA) $(pkgdata_DATA)
 
 DIST_COMMON =  README AUTHORS COPYING ChangeLog INSTALL Makefile.am \
 Makefile.in NEWS THANKS TODO acinclude.m4 aclocal.m4 config.guess \
-config.sub configure configure.in install-sh ltconfig ltmain.sh missing \
+config.sub configure configure.in install-sh ltmain.sh missing \
 mkinstalldirs
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:
@@ -181,7 +190,7 @@ install-pkgdataSCRIPTS: $(pkgdata_SCRIPTS)
 uninstall-pkgdataSCRIPTS:
 	@$(NORMAL_UNINSTALL)
 	list='$(pkgdata_SCRIPTS)'; for p in $$list; do \
-	  rm -f $(DESTDIR)$(pkgdatadir)/$$p; \
+	  rm -f $(DESTDIR)$(pkgdatadir)/`echo $$p|sed '$(transform)'`; \
 	done
 
 install-aclocalDATA: $(aclocal_DATA)
@@ -258,7 +267,7 @@ maintainer-clean-recursive:
 	dot_seen=no; \
 	rev=''; list='$(SUBDIRS)'; for subdir in $$list; do \
 	  rev="$$subdir $$rev"; \
-	  test "$$subdir" = "." && dot_seen=yes; \
+	  test "$$subdir" != "." || dot_seen=yes; \
 	done; \
 	test "$$dot_seen" = "no" && rev=". $$rev"; \
 	target=`echo $@ | sed s/-recursive//`; \
@@ -422,6 +431,7 @@ clean-am:  clean-tags clean-generic mostlyclean-am
 clean: clean-recursive
 
 distclean-am:  distclean-tags distclean-generic clean-am
+	-rm -f libtool
 
 distclean: distclean-recursive
 	-rm -f config.status
@@ -451,26 +461,21 @@ clean-generic maintainer-clean-generic clean mostlyclean distclean \
 maintainer-clean
 
 
-libtool: $(srcdir)/ltmain.sh $(srcdir)/ltconfig
-	CC="$(CC)" CFLAGS="$(CFLAGS)" CPPFLAGS="$(CPPFLAGS)" \
-	LD="$(LD)" LDFLAGS="$(LDFLAGS)" LIBS="$(LIBS)" \
-	LN_S="$(LN_S)" NM="$(NM)" RANLIB="$(RANLIB)" \
-	DLLTOOL="$(DLLTOOL)" OBJDUMP="$(OBJDUMP)" AS="$(AS)" \
-	$(SHELL) $(srcdir)/ltconfig $(LIBTOOL_FLAGS) --srcdir=$(srcdir) \
-	  --output=$@ $(srcdir)/ltmain.sh
-
-# Experimental C version of libtool.
-clibtool: $(srcdir)/ltmain.c $(srcdir)/ltconfig
-	CC="$(CC)" CFLAGS="$(CFLAGS)" CPPFLAGS="$(CPPFLAGS)" \
-	LD="$(LD)" LDFLAGS="$(LDFLAGS)" LIBS="$(LIBS)" \
-	LN_S="$(LN_S)" NM="$(NM)" RANLIB="$(RANLIB)" \
-	DLLTOOL="$(DLLTOOL)" OBJDUMP="$(OBJDUMP)" AS="$(AS)" \
-	$(SHELL) $(srcdir)/ltconfig $(LIBTOOL_FLAGS) --srcdir=$(srcdir) \
-	  --output=$@ $(srcdir)/ltmain.c
+libtool: $(srcdir)/ltmain.sh $(top_builddir)/configure.in
+	$(SHELL) $(top_builddir)/config.status --recheck
+	chmod +x $@
 
 libtoolize: $(srcdir)/libtoolize.in $(top_builddir)/config.status
-	CONFIG_FILES=libtoolize CONFIG_HEADERS= $(top_builddir)/config.status
-	chmod +x libtoolize
+	CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) $(top_builddir)/config.status
+	chmod +x $@
+
+$(srcdir)/ltmain.sh: $(srcdir)/ltmain.in $(TSDEPS)
+	-rm -f ltmain.shT
+	date=`$(SHELL) $(srcdir)/mkstamp < $(srcdir)/ChangeLog` && \
+	sed -e 's/@''PACKAGE@/@PACKAGE@/' -e 's/@''VERSION@/@VERSION@/' \
+	    -e "s%@""TIMESTAMP@%$$date%" $(srcdir)/ltmain.in > ltmain.shT
+	mv -f ltmain.shT $@ || \
+	(rm -f $@ && cp ltmain.shT $@ && rm -f ltmain.shT)
 
 .PHONY: timestamps update-timestamps
 timestamps distdir: update-timestamps
@@ -478,36 +483,19 @@ update-timestamps:
 	@if (cd $(srcdir) && test -d CVS && \
 	    $(CVS) -n update $(TSDEPS_DIST) | grep '^M'); then \
 		echo "Cannot make dist before commit"; exit 1; else :; fi
-	$(MAKE) TSDEPS="$(TSDEPS_DIST)" $(srcdir)/ltconfig $(srcdir)/ltmain.sh
-
-# Do line number substitution, as well as PACKAGE, VERSION and TIMESTAMP.
-# Line numbering transliterated from a section in autoconf (Autoconf 2.12).
-@srcdir@/ltconfig: $(srcdir)/ltconfig.in $(top_srcdir)/configure.in $(TSDEPS)
-	rm -f ltconfig.T
-	date=`$(SHELL) $(srcdir)/mkstamp < $(srcdir)/ChangeLog` && \
-	$(AWK) '/@LINENO@/ { printf "%d:", NR } { print }' $(srcdir)/ltconfig.in | \
-	  sed -e 's/@''PACKAGE@/@PACKAGE@/' -e 's/@''VERSION@/@VERSION@/' \
-	      -e "s%@""TIMESTAMP@%$$date%" \
-	      -e '/@LINENO@/s/^\([0-9][0-9]*\):\(.*\)@LINENO@/\2\1/' \
-		> ltconfig.T
-	chmod +x ltconfig.T
-	mv -f ltconfig.T $@ || \
-	(rm -f $@ && cp ltconfig.T $@ && rm -f ltconfig.T)
-
-@srcdir@/ltmain.sh: $(srcdir)/ltmain.in $(top_srcdir)/configure.in $(TSDEPS)
-	rm -f ltmain.shT
-	date=`$(SHELL) $(srcdir)/mkstamp < $(srcdir)/ChangeLog` && \
-	sed -e 's/@''PACKAGE@/@PACKAGE@/' -e 's/@''VERSION@/@VERSION@/' \
-	    -e "s%@""TIMESTAMP@%$$date%" $(srcdir)/ltmain.in > ltmain.shT
-	mv -f ltmain.shT $@ || \
-	(rm -f $@ && cp ltmain.shT $@ && rm -f ltmain.shT)
 
 # All our rules should depend on these demo files.
-all-recursive: $(ACINCLUDE_M4_LIST)
+all-recursive: $(srcdir)/libltdl/acinclude.m4 $(ACINCLUDE_M4_LIST)
+
+@srcdir@/libltdl/acinclude.m4: $(srcdir)/libtool.m4 $(srcdir)/ltdl.m4
+	-rm -f $@ $@T
+	cat $(srcdir)/libtool.m4 $(srcdir)/ltdl.m4 > $@T
+	mv $@T $@
 
 @ACINCLUDE_M4_LIST@: $(srcdir)/libtool.m4
-	rm -f $@
-	cp $(srcdir)/libtool.m4 $@
+	-rm -f $@ $@T
+	cat $(srcdir)/libtool.m4 > $@T
+	mv $@T $@
 
 .PHONY: configure-subdirs
 configure-subdirs distdir: $(DIST_MAKEFILE_LIST)

@@ -1,4 +1,4 @@
-This is libtool.info, produced by makeinfo version 3.12k from
+This is libtool.info, produced by makeinfo version 4.0 from
 libtool.texi.
 
 INFO-DIR-SECTION GNU programming tools
@@ -11,23 +11,16 @@ START-INFO-DIR-ENTRY
 * libtoolize: (libtool)Invoking libtoolize.     Adding libtool support.
 END-INFO-DIR-ENTRY
 
-   This file documents GNU Libtool 1.3.5
+   This file documents GNU Libtool 1.4.2
 
-   Copyright (C) 1996-1999 Free Software Foundation, Inc.
+   Copyright (C) 1996-2000 Free Software Foundation, Inc.
 
-   Permission is granted to make and distribute verbatim copies of this
-manual provided the copyright notice and this permission notice are
-preserved on all copies.
-
-   Permission is granted to copy and distribute modified versions of
-this manual under the conditions for verbatim copying, provided that the
-entire resulting derived work is distributed under the terms of a
-permission notice identical to this one.
-
-   Permission is granted to copy and distribute translations of this
-manual into another language, under the above conditions for modified
-versions, except that this permission notice may be stated in a
-translation approved by the Foundation.
+   Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.1 or
+any later version published by the Free Software Foundation; with the
+no Invariant Sections, with no Front-Cover Texts, and with no
+Back-Cover Texts.  A copy of the license is included in the section
+entitled "GNU Free Documentation License".
 
 
 File: libtool.info,  Node: Top,  Next: Introduction,  Prev: (dir),  Up: (dir)
@@ -37,7 +30,7 @@ Shared library support for GNU
 
    This file documents GNU Libtool, a script that allows package
 developers to provide generic shared library support.  This edition
-documents version 1.3.5.
+documents version 1.4.2.
 
    *Note Reporting bugs::, for information on how to report problems
 with libtool.
@@ -57,6 +50,7 @@ with libtool.
 * Other languages::             Using libtool without a C compiler.
 * Troubleshooting::             When libtool doesn't work as advertised.
 * Maintaining::                 Information used by the libtool maintainer.
+* GNU Free Documentation License:: License for this manual.
 * Index::                       Full index.
 
 
@@ -84,7 +78,8 @@ Invoking `libtool'
 * Execute mode::                Debugging libtool-generated programs.
 * Install mode::                Making libraries and executables public.
 * Finish mode::                 Completing a library installation.
-* Uninstall mode::              Removing executables and libraries.
+* Uninstall mode::              Removing installed executables and libraries.
+* Clean mode::                  Removing uninstalled executables and libraries.
 
 Integrating libtool with your package
 
@@ -96,9 +91,7 @@ Integrating libtool with your package
 
 Configuring libtool
 
-* Invoking ltconfig::           `ltconfig' command line options.
-* ltconfig example::            Manually configuring a `libtool'.
-* AM_PROG_LIBTOOL::             Configuring `libtool' in `configure.in'.
+* AC_PROG_LIBTOOL::             Configuring `libtool' in `configure.in'.
 
 Including libtool in your package
 
@@ -127,6 +120,9 @@ Using libltdl
 
 * Libltdl interface::           How to use libltdl in your programs.
 * Modules for libltdl::         Creating modules that can be `dlopen'ed.
+* Thread Saftey in libltdl::	Registering callbacks for multi-thread safety.
+* User defined module data::    Associating data with loaded modules.
+* Module loaders for libltdl::  Creating user defined module loaders.
 * Distributing libltdl::        How to distribute libltdl with your package.
 
 Using libtool with other languages
@@ -161,6 +157,7 @@ Platform quirks
 * References::                  Finding more information.
 * Compilers::                   Creating object files from source files.
 * Reloadable objects::          Binding object files together.
+* Multiple dependencies::	Removing duplicate dependant libraries.
 * Archivers::                   Programs that create static archives.
 
 
@@ -375,7 +372,7 @@ library, `libhello', out of the files `foo.c' and `hello.c'.
 
    Note that the `foo.c' source file uses the `cos' math library
 function, which is usually found in the standalone math library, and not
-the C library (*note Trigonometric Functions: (libc)Trig Functions).
+the C library (*note Trigonometric Functions: (libc)Trig Functions.).
 So, we need to add `-lm' to the end of the link line whenever we link
 `foo.o' or `foo.lo' into an executable or a library (*note
 Inter-library dependencies::).
@@ -887,7 +884,7 @@ only interested in a static library.  When you link a program with such
 a library, libtool will actually link all object files and dependency
 libraries into the program.
 
-   If you omit both `-rpath' and `-static', libtool create a libtool
+   If you omit both `-rpath' and `-static', libtool will create a
 convenience library that can be used to create other libtool libraries,
 even shared ones.  Just like in the static case, the library behaves as
 an alias to a set of object files and dependency libraries, but in this
@@ -897,12 +894,14 @@ indirectly, into a single program or library, otherwise you may get
 errors about symbol redefinitions.
 
    When GNU automake is used, you should use `noinst_LTLIBRARIES'
-instead of `lib_LTLIBRARIES' for convenience libraries, so that the
-`-rpath' option is not passed when they are linked.  As a rule of
-thumb, link a libtool convenience library into at most one libtool
-library, and never into a program, and link libtool static convenience
-libraries only into programs, and only if you need to carry library
-dependency information to the user of the static convenience library.
+instead of `lib_LTLIBRARIES' for convenience libraries, so that the
+`-rpath' option is not passed when they are linked.
+
+   As a rule of thumb, link a libtool convenience library into at most
+one libtool library, and never into a program, and link libtool static
+convenience libraries only into programs, and only if you need to carry
+library dependency information to the user of the static convenience
+library.
 
    Another common situation where static linking is desirable is in
 creating a standalone binary.  Use libtool to do the linking and add the
@@ -968,7 +967,10 @@ and accepts the following options:
           Create a library or an executable.
 
     `uninstall'
-          Delete libraries or executables.
+          Delete installed libraries or executables.
+
+    `clean'
+          Delete uninstalled libraries or executables.
 
 `--version'
      Print libtool version information and exit.
@@ -984,7 +986,8 @@ programs libtool invokes, rather than libtool itself.
 * Execute mode::                Debugging libtool-generated programs.
 * Install mode::                Making libraries and executables public.
 * Finish mode::                 Completing a library installation.
-* Uninstall mode::              Removing executables and libraries.
+* Uninstall mode::              Removing installed executables and libraries.
+* Clean mode::                  Removing uninstalled executables and libraries.
 
 
 File: libtool.info,  Node: Compile mode,  Next: Link mode,  Up: Invoking libtool
@@ -1003,7 +1006,9 @@ source code suffix (e.g. `.c' for C source code) with the library
 object suffix, `.lo'.
 
    If shared libraries are being built, any necessary PIC generation
-flags are substituted into the compilation command.
+flags are substituted into the compilation command.  You can pass
+compiler and linker specific flags using `-Wc,FLAG' and `-Xcompiler
+FLAG' or `-Wl,FLAG' and `-Xlinker FLAG', respectively.
 
    If the `-static' option is given, then a `.o' file is built, even if
 libtool was configured with `--disable-static'.
@@ -1097,6 +1102,16 @@ output file (with the `-o' flag) from several object files.
      however, 'libname' and 'name' must not be used at the same time in
      your package.
 
+`-no-fast-install'
+     Disable fast-install mode for the executable OUTPUT-FILE.  Useful
+     if the program won't be necessarily installed.
+
+`-no-install'
+     Link an executable OUTPUT-FILE that can't be installed and
+     therefore doesn't need a wrapper script.  Useful if the program is
+     only used in the build tree, e.g., for testing or generating other
+     files.
+
 `-no-undefined'
      Declare that OUTPUT-FILE does not depend on any other libraries.
      Some platforms cannot create shared libraries that depend on other
@@ -1134,6 +1149,10 @@ output file (with the `-o' flag) from several object files.
      information CURRENT, REVISION, and AGE to build it (*note
      Versioning::).  Do *not* use this flag to specify package release
      information, rather see the `-release' flag.
+
+`-Wl,FLAG'
+`-Xlinker FLAG'
+     Pass a linker specific flag directly to the linker.
 
    If the OUTPUT-FILE ends in `.la', then a libtool library is created,
 which must be built only from library objects (`.lo' files).  The
@@ -1203,13 +1222,28 @@ Running this command may require superuser privileges, so the
 `--dry-run' option may be useful.
 
 
-File: libtool.info,  Node: Uninstall mode,  Prev: Finish mode,  Up: Invoking libtool
+File: libtool.info,  Node: Uninstall mode,  Next: Clean mode,  Prev: Finish mode,  Up: Invoking libtool
 
 Uninstall mode
 ==============
 
    "Uninstall" mode deletes installed libraries, executables and
 objects.
+
+   The first MODE-ARG is the name of the program to use to delete files
+(typically `/bin/rm').
+
+   The remaining MODE-ARGS are either flags for the deletion program
+(beginning with a `-'), or the names of files to delete.
+
+
+File: libtool.info,  Node: Clean mode,  Prev: Uninstall mode,  Up: Invoking libtool
+
+Clean mode
+==========
+
+   "Clean" mode deletes uninstalled libraries, executables, objects and
+libtool's temporary files associated with them.
 
    The first MODE-ARG is the name of the program to use to delete files
 (typically `/bin/rm').
@@ -1233,29 +1267,4 @@ that your users can install hassle-free shared libraries.
 * Configuring::                 Configuring libtool for a host system.
 * Distributing::                What files to distribute with your package.
 * Static-only libraries::       Sometimes shared libraries are just a pain.
-
-
-File: libtool.info,  Node: Makefile rules,  Next: Using Automake,  Up: Integrating libtool
-
-Writing `Makefile' rules for libtool
-====================================
-
-   Libtool is fully integrated with Automake (*note Introduction:
-(automake)Top), starting with Automake version 1.2.
-
-   If you want to use libtool in a regular `Makefile' (or
-`Makefile.in'), you are on your own.  If you're not using Automake 1.2,
-and you don't know how to incorporate libtool into your package you
-need to do one of the following:
-
-  1. Download Automake (version 1.2 or later) from your nearest GNU
-     mirror, install it, and start using it.
-
-  2. Learn how to write `Makefile' rules by hand.  They're sometimes
-     complex, but if you're clever enough to write rules for compiling
-     your old libraries, then you should be able to figure out new
-     rules for libtool libraries (hint: examine the `Makefile.in' in
-     the `demo' subdirectory of the libtool distribution... note
-     especially that it was automatically generated from the
-     `Makefile.am' by Automake).
 

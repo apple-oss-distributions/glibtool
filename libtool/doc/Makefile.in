@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p5a from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -61,29 +61,38 @@ POST_UNINSTALL = :
 host_alias = @host_alias@
 host_triplet = @host@
 ACINCLUDE_M4_LIST = @ACINCLUDE_M4_LIST@
+AMTAR = @AMTAR@
 AS = @AS@
 AWK = @AWK@
 CC = @CC@
 CONF_SUBDIRS = @CONF_SUBDIRS@
+DEPDIR = @DEPDIR@
 DIST_MAKEFILE_LIST = @DIST_MAKEFILE_LIST@
 DLLTOOL = @DLLTOOL@
-FILE = @FILE@
+ECHO = @ECHO@
+EXEEXT = @EXEEXT@
+INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LD = @LD@
 LIBTOOL = @LIBTOOL@
-LIBTOOL_FLAGS = @LIBTOOL_FLAGS@
 LN_S = @LN_S@
 MAKEINFO = @MAKEINFO@
 NM = @NM@
 OBJDUMP = @OBJDUMP@
+OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
+STRIP = @STRIP@
+TIMESTAMP = @TIMESTAMP@
 VERSION = @VERSION@
 aclocaldir = @aclocaldir@
+am__include = @am__include@
+am__quote = @am__quote@
+install_sh = @install_sh@
 pkgdatadir = @pkgdatadir@
 
 AUTOMAKE_OPTIONS = gnits
 info_TEXINFOS = libtool.texi
-libtool_TEXINFOS = PLATFORMS
+libtool_TEXINFOS = PLATFORMS fdl.texi
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_CLEAN_FILES = 
 TEXI2DVI = texi2dvi
@@ -97,7 +106,7 @@ stamp-vti texinfo.tex version.texi
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:
@@ -219,7 +228,7 @@ uninstall-info:
 	else ii=; fi; \
 	list='$(INFO_DEPS)'; \
 	for file in $$list; do \
-	  test -z "$ii" \
+	  test -z "$$ii" \
 	    || install-info --info-dir=$(DESTDIR)$(infodir) --remove $$file; \
 	done
 	@$(NORMAL_UNINSTALL)
@@ -321,6 +330,7 @@ clean-am:  clean-vti clean-aminfo clean-generic mostlyclean-am
 clean: clean-am
 
 distclean-am:  distclean-vti distclean-aminfo distclean-generic clean-am
+	-rm -f libtool
 
 distclean: distclean-am
 
